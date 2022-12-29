@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\nrf24l01.obj",
+".\Objects\iic.obj",
+".\Objects\oled.obj" 
+TO ".\Objects\transmitter" 
+PRINT(".\Listings\transmitter.m51") RAMSIZE(256) 

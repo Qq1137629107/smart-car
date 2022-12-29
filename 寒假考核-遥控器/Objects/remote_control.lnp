@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\lcd12864.obj",
+".\Objects\nrf24l01.obj",
+".\Objects\adc.obj" 
+TO ".\Objects\remote_control" 
+PRINT(".\Listings\remote_control.m51") RAMSIZE(256) 

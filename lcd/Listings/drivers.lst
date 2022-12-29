@@ -1,0 +1,43 @@
+C51 COMPILER V9.60.0.0   DRIVERS                                                           11/26/2022 15:51:02 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE DRIVERS
+OBJECT MODULE PLACED IN .\Objects\drivers.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE drivers.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\
+                    -drivers.lst) TABS(2) OBJECT(.\Objects\drivers.obj)
+
+line level    source
+
+   1          #include "drivers.h"
+   2          
+   3          
+   4          
+   5          void Delay100ms()   //@11.0592MHz
+   6          {
+   7   1        unsigned char i, j, k;
+   8   1      
+   9   1        i = 5;
+  10   1        j = 52;
+  11   1        k = 195;
+  12   1        do
+  13   1        {
+  14   2          do
+  15   2          {
+  16   3            while (--k);
+  17   3          } while (--j);
+  18   2        } while (--i);
+  19   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     13    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,1762 @@
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\mai
+                    -n.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <STC15F2K60S2.H>
+*** WARNING C318 IN LINE 1 OF main.c: can't open file 'STC15F2K60S2.H'
+   2          #include <intrins.h>
+   3          #define u8 unsigned char
+   4          #define u16 unsigned int
+   5          
+   6          
+   7          
+   8          
+   9          /**************************************************************************/
+  10          //引脚定义
+  11          sbit LED=P1^0;  //定义指示灯
+*** ERROR C202 IN LINE 11 OF main.c: 'P1': undefined identifier
+  12          
+  13          sbit CH1=P3^7;  //定义8个通道输出
+*** ERROR C202 IN LINE 13 OF main.c: 'P3': undefined identifier
+  14          sbit CH2=P3^6;
+*** ERROR C202 IN LINE 14 OF main.c: 'P3': undefined identifier
+  15          sbit CH3=P3^3;
+*** ERROR C202 IN LINE 15 OF main.c: 'P3': undefined identifier
+  16          sbit CH4=P3^2;
+*** ERROR C202 IN LINE 16 OF main.c: 'P3': undefined identifier
+  17          sbit CH5=P3^1;
+*** ERROR C202 IN LINE 17 OF main.c: 'P3': undefined identifier
+  18          sbit CH6=P3^0;
+*** ERROR C202 IN LINE 18 OF main.c: 'P3': undefined identifier
+  19          sbit CH7=P3^4;
+*** ERROR C202 IN LINE 19 OF main.c: 'P3': undefined identifier
+  20          sbit CH8=P3^5;
+*** ERROR C202 IN LINE 20 OF main.c: 'P3': undefined identifier
+  21          
+  22          sbit MDO=P1^5;  //定义无线模块的管脚
+*** ERROR C202 IN LINE 22 OF main.c: 'P1': undefined identifier
+  23          sbit SCK=P5^4;
+*** ERROR C202 IN LINE 23 OF main.c: 'P5': undefined identifier
+  24          sbit CE=P5^5;
+*** ERROR C202 IN LINE 24 OF main.c: 'P5': undefined identifier
+  25          sbit IRQ=P1^4;
+*** ERROR C202 IN LINE 25 OF main.c: 'P1': undefined identifier
+  26          sbit MDI=P1^3;
+*** ERROR C202 IN LINE 26 OF main.c: 'P1': undefined identifier
+  27          sbit CSN=P1^2;
+*** ERROR C202 IN LINE 27 OF main.c: 'P1': undefined identifier
+  28          
+  29          
+  30          
+  31          
+  32          
+  33          /**************************************************************************/
+  34          
+  35          u8 code random[100]={4,1,3,2,2,1,0,0,2,2,2,3,4,1,2,1,4,3,3,4,//随机跳频序列
+  36                               2,0,2,2,3,1,2,3,2,2,2,4,2,4,0,3,4,2,3,1,
+  37                               0,3,1,3,3,0,2,0,4,3,3,3,3,3,4,1,1,4,3,0,
+  38                               1,0,3,2,3,2,3,3,4,4,1,3,0,0,3,1,3,3,3,0,
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 2   
+
+  39                               3,3,4,1,2,4,1,3,0,1,3,4,4,3,2,3,1,2,3,3};
+  40          
+  41          //数据保存
+  42          bit Data_change;
+  43          u8 xdata TEMP_DATA[50];
+  44                                
+  45          
+  46          //无线通信
+  47          u8 rx[11];    //接收的11字节数据
+  48          u8 tx[11];
+  49          u8 m;
+  50          u8 hopping_turn,hopping_num,hopping_count;
+  51          
+  52          u8 xdata address[5];
+  53          u8 code address_0[5]={'L','O','V','E','!'};//使用LOVE作为对频暗语
+  54          
+  55          u8 hopping[5]={10,35,60,85,110};
+  56          bit first,restar;
+  57          bit connecting,lose;
+  58          bit jump_1,jump_2,jump_mode;
+  59          
+  60          u8 NRF_error;
+  61          
+  62          
+  63          u8 TX_power=3;
+  64          
+  65          
+  66          
+  67          //通道输出
+  68          u16 xdata timer1=0,timer2=0,timer3=0,timer4=0,timer5=0;
+  69          u8 xdata rx_num=0,receive=0;
+  70          u8 xdata Light_LED=0;
+  71          
+  72          u16 xdata out_control_data[8]={511,511,80,511,511,511,511,511};
+  73          
+  74          u16 CH_data[8]={0,1024,0,1024,0,1024};
+  75          u16 data buff[8];
+  76          u16 temp1,temp2;
+  77          u8 t_output;
+  78          
+  79          
+  80          
+  81          //电压检测
+  82          u8 t_adc;
+  83          u16 adc1,adc2;
+  84          long idata last_adc1,last_adc2;
+  85          u16 voltage_bec,voltage_total;
+  86          
+  87          
+  88          
+  89          //PPM
+  90          u8 t_PPMout;
+  91          u8 T_h,T_l;
+  92          bit PPM_OUT;
+  93          
+  94          
+  95          bit CH1_SW,CH2_SW,CH3_SW,CH4_SW,CH5_SW,CH6_SW,CH7_SW,CH8_SW;
+  96          bit CH1_PWM,CH2_PWM,CH7_PWM;
+  97          
+  98          
+  99          
+ 100          //SBUS
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 3   
+
+ 101          bit SBUS;
+ 102          u8 t_sbus;
+ 103          u8 xdata Sbus_buff[25],Sbus_tx[25];
+ 104          u16 xdata Sbus_data[8];
+ 105          
+ 106          
+ 107          /**************************************************************************/
+ 108          //延时函数
+ 109          void Delay1ms()   //@12.000MHz
+ 110          {
+ 111   1        unsigned char i, j;
+ 112   1        i = 12;
+ 113   1        j = 168;
+ 114   1        do
+ 115   1        {
+ 116   2          while (--j);
+ 117   2        } while (--i);
+ 118   1      }
+ 119          
+ 120          void delay_ms(u8 i)
+ 121          {
+ 122   1        while(i--)
+ 123   1        Delay1ms();
+ 124   1      }
+ 125          
+ 126          /**************************************************************************/
+ 127          //ROM存储
+ 128          u8 EEPROM_read(u8 address_H,u16 address_L)  //读数据
+ 129          {
+ 130   1        IAP_CMD=0x01;
+*** ERROR C202 IN LINE 130 OF main.c: 'IAP_CMD': undefined identifier
+ 131   1        if(address_L>255)
+ 132   1        {
+ 133   2          IAP_ADDRH=address_H+1;
+*** ERROR C202 IN LINE 133 OF main.c: 'IAP_ADDRH': undefined identifier
+ 134   2          IAP_ADDRL=address_L-255;  
+*** ERROR C202 IN LINE 134 OF main.c: 'IAP_ADDRL': undefined identifier
+ 135   2        }
+ 136   1        else 
+ 137   1        {
+ 138   2          IAP_ADDRH=address_H;
+*** ERROR C202 IN LINE 138 OF main.c: 'IAP_ADDRH': undefined identifier
+ 139   2          IAP_ADDRL=address_L;  
+*** ERROR C202 IN LINE 139 OF main.c: 'IAP_ADDRL': undefined identifier
+ 140   2        }
+ 141   1        
+ 142   1        IAP_TRIG=0x5a;      
+*** ERROR C202 IN LINE 142 OF main.c: 'IAP_TRIG': undefined identifier
+ 143   1        IAP_TRIG=0xa5; _nop_();
+*** ERROR C202 IN LINE 143 OF main.c: 'IAP_TRIG': undefined identifier
+ 144   1        return IAP_DATA;
+*** ERROR C202 IN LINE 144 OF main.c: 'IAP_DATA': undefined identifier
+ 145   1      }
+ 146          
+ 147          void EEPROM_write(u8 address_H,u16 address_L,u8 byte) //写入数据
+ 148          {
+ 149   1        IAP_CMD=0x02;
+*** ERROR C202 IN LINE 149 OF main.c: 'IAP_CMD': undefined identifier
+ 150   1        IAP_DATA=byte;
+*** ERROR C202 IN LINE 150 OF main.c: 'IAP_DATA': undefined identifier
+ 151   1        if(address_L>255)
+ 152   1        {
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 4   
+
+ 153   2          IAP_ADDRH=address_H+1;
+*** ERROR C202 IN LINE 153 OF main.c: 'IAP_ADDRH': undefined identifier
+ 154   2          IAP_ADDRL=address_L-255;  
+*** ERROR C202 IN LINE 154 OF main.c: 'IAP_ADDRL': undefined identifier
+ 155   2        }
+ 156   1        else 
+ 157   1        {
+ 158   2          IAP_ADDRH=address_H;
+*** ERROR C202 IN LINE 158 OF main.c: 'IAP_ADDRH': undefined identifier
+ 159   2          IAP_ADDRL=address_L;  
+*** ERROR C202 IN LINE 159 OF main.c: 'IAP_ADDRL': undefined identifier
+ 160   2        }
+ 161   1      
+ 162   1        IAP_TRIG=0x5a;
+*** ERROR C202 IN LINE 162 OF main.c: 'IAP_TRIG': undefined identifier
+ 163   1        IAP_TRIG=0xa5; _nop_();
+*** ERROR C202 IN LINE 163 OF main.c: 'IAP_TRIG': undefined identifier
+ 164   1        
+ 165   1      }
+ 166          
+ 167          void EEPROM_clean(u8 address_H) //擦除数据
+ 168          {
+ 169   1        IAP_CMD=0x03;
+*** ERROR C202 IN LINE 169 OF main.c: 'IAP_CMD': undefined identifier
+ 170   1        IAP_ADDRH=address_H;
+*** ERROR C202 IN LINE 170 OF main.c: 'IAP_ADDRH': undefined identifier
+ 171   1        IAP_ADDRL=0;
+*** ERROR C202 IN LINE 171 OF main.c: 'IAP_ADDRL': undefined identifier
+ 172   1        IAP_TRIG=0x5a;
+*** ERROR C202 IN LINE 172 OF main.c: 'IAP_TRIG': undefined identifier
+ 173   1        IAP_TRIG=0xa5;_nop_();
+*** ERROR C202 IN LINE 173 OF main.c: 'IAP_TRIG': undefined identifier
+ 174   1      }
+ 175          
+ 176          u8 EEPROM_test(u8 address_H)
+ 177          {
+ 178   1        IAP_CONTR=0x83;
+*** ERROR C202 IN LINE 178 OF main.c: 'IAP_CONTR': undefined identifier
+ 179   1        
+ 180   1        EEPROM_clean(address_H);
+ 181   1        EEPROM_write(address_H,0,0x88);
+ 182   1        if(EEPROM_read(address_H,0)==0x88)
+ 183   1        {
+ 184   2          EEPROM_clean(address_H);
+ 185   2          EEPROM_write(address_H,0,0x55);
+ 186   2          if(EEPROM_read(address_H,0)==0x55)
+ 187   2          {
+ 188   3            return 1;
+ 189   3          }
+ 190   2        }
+ 191   1        
+ 192   1        return 0;
+ 193   1      }
+ 194          
+ 195          
+ 196          
+ 197          void DATA_read()
+ 198          {
+ 199   1        u8 i;
+ 200   1        u16 sum=0,sum_read;
+ 201   1        
+ 202   1        IAP_CONTR=0x83;
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 5   
+
+*** ERROR C202 IN LINE 202 OF main.c: 'IAP_CONTR': undefined identifier
+ 203   1        for(i=0;i<40;i++)
+ 204   1        {
+ 205   2          TEMP_DATA[i]=EEPROM_read(0,i);  
+ 206   2          sum+=TEMP_DATA[i];
+ 207   2        }
+ 208   1        
+ 209   1        sum_read=EEPROM_read(0,40);//读校验和
+ 210   1        sum_read<<=8;
+ 211   1        sum_read+=EEPROM_read(0,41);
+ 212   1        
+ 213   1        if(TEMP_DATA[0]!=0xab||sum!=sum_read)//比较校验和
+ 214   1        {
+ 215   2          
+ 216   2           first=1;
+ 217   2      
+ 218   2        }
+ 219   1        else
+ 220   1        {
+ 221   2          hopping[0]=TEMP_DATA[1];
+ 222   2          hopping[1]=TEMP_DATA[2];
+ 223   2          hopping[2]=TEMP_DATA[3];
+ 224   2          hopping[3]=TEMP_DATA[4];
+ 225   2          hopping[4]=TEMP_DATA[5];
+ 226   2          address[0]=TEMP_DATA[6];
+ 227   2          address[1]=TEMP_DATA[7];
+ 228   2          address[2]=TEMP_DATA[8];
+ 229   2          address[3]=TEMP_DATA[9];
+ 230   2          address[4]=TEMP_DATA[10];
+ 231   2          
+ 232   2          out_control_data[0]=TEMP_DATA[11];
+ 233   2          out_control_data[0]<<=8;
+ 234   2          out_control_data[0]+=TEMP_DATA[12];
+ 235   2          out_control_data[1]=TEMP_DATA[13];
+ 236   2          out_control_data[1]<<=8;
+ 237   2          out_control_data[1]+=TEMP_DATA[14];
+ 238   2          out_control_data[2]=TEMP_DATA[15];
+ 239   2          out_control_data[2]<<=8;
+ 240   2          out_control_data[2]+=TEMP_DATA[16];
+ 241   2          out_control_data[3]=TEMP_DATA[17];
+ 242   2          out_control_data[3]<<=8;
+ 243   2          out_control_data[3]+=TEMP_DATA[18];
+ 244   2          out_control_data[4]=TEMP_DATA[19];
+ 245   2          out_control_data[4]<<=8;
+ 246   2          out_control_data[4]+=TEMP_DATA[20];
+ 247   2          out_control_data[5]=TEMP_DATA[21];
+ 248   2          out_control_data[5]<<=8;
+ 249   2          out_control_data[5]+=TEMP_DATA[22];
+ 250   2          out_control_data[6]=TEMP_DATA[23];
+ 251   2          out_control_data[6]<<=8;
+ 252   2          out_control_data[6]+=TEMP_DATA[24];
+ 253   2          out_control_data[7]=TEMP_DATA[25];
+ 254   2          out_control_data[7]<<=8;
+ 255   2          out_control_data[7]+=TEMP_DATA[26];
+ 256   2          
+ 257   2          PPM_OUT=TEMP_DATA[27];
+ 258   2          CH1_PWM=TEMP_DATA[28];
+ 259   2          CH2_PWM=TEMP_DATA[29];
+ 260   2          CH7_PWM=TEMP_DATA[30];
+ 261   2          CH1_SW=TEMP_DATA[31];
+ 262   2          CH2_SW=TEMP_DATA[32];
+ 263   2          CH3_SW=TEMP_DATA[33];
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 6   
+
+ 264   2          CH4_SW=TEMP_DATA[34];
+ 265   2          CH5_SW=TEMP_DATA[35];
+ 266   2          CH6_SW=TEMP_DATA[36];
+ 267   2          CH7_SW=TEMP_DATA[37];
+ 268   2          CH8_SW=TEMP_DATA[38];
+ 269   2          SBUS=TEMP_DATA[39];
+ 270   2          
+ 271   2        } 
+ 272   1        
+ 273   1        IAP_CONTR=0;
+*** ERROR C202 IN LINE 273 OF main.c: 'IAP_CONTR': undefined identifier
+ 274   1      }
+ 275          void DATA_save()
+ 276          {
+ 277   1        u8 i;u16 sum;
+ 278   1        
+ 279   1        TEMP_DATA[0]=0xab;
+ 280   1      
+ 281   1        TEMP_DATA[1]=hopping[0];  //修改目标模型数据
+ 282   1        TEMP_DATA[2]=hopping[1];
+ 283   1        TEMP_DATA[3]=hopping[2];
+ 284   1        TEMP_DATA[4]=hopping[3];
+ 285   1        TEMP_DATA[5]=hopping[4];
+ 286   1        TEMP_DATA[6]=address[0];  //修改目标模型数据
+ 287   1        TEMP_DATA[7]=address[1];
+ 288   1        TEMP_DATA[8]=address[2];
+ 289   1        TEMP_DATA[9]=address[3];
+ 290   1        TEMP_DATA[10]=address[4];
+ 291   1        
+ 292   1        TEMP_DATA[11]=out_control_data[0]>>8;
+ 293   1        TEMP_DATA[12]=out_control_data[0];
+ 294   1        TEMP_DATA[13]=out_control_data[1]>>8;
+ 295   1        TEMP_DATA[14]=out_control_data[1];
+ 296   1        TEMP_DATA[15]=out_control_data[2]>>8;
+ 297   1        TEMP_DATA[16]=out_control_data[2];
+ 298   1        TEMP_DATA[17]=out_control_data[3]>>8;
+ 299   1        TEMP_DATA[18]=out_control_data[3];
+ 300   1        TEMP_DATA[19]=out_control_data[4]>>8;
+ 301   1        TEMP_DATA[20]=out_control_data[4];
+ 302   1        TEMP_DATA[21]=out_control_data[5]>>8;
+ 303   1        TEMP_DATA[22]=out_control_data[5];
+ 304   1        TEMP_DATA[23]=out_control_data[6]>>8;
+ 305   1        TEMP_DATA[24]=out_control_data[6];
+ 306   1        TEMP_DATA[25]=out_control_data[7]>>8;
+ 307   1        TEMP_DATA[26]=out_control_data[7];
+ 308   1        
+ 309   1        TEMP_DATA[27]=PPM_OUT;
+ 310   1        TEMP_DATA[28]=CH1_PWM;
+ 311   1        TEMP_DATA[29]=CH2_PWM;
+ 312   1        TEMP_DATA[30]=CH7_PWM;
+ 313   1        TEMP_DATA[31]=CH1_SW;
+ 314   1        TEMP_DATA[32]=CH2_SW;
+ 315   1        TEMP_DATA[33]=CH3_SW;
+ 316   1        TEMP_DATA[34]=CH4_SW;
+ 317   1        TEMP_DATA[35]=CH5_SW;
+ 318   1        TEMP_DATA[36]=CH6_SW;
+ 319   1        TEMP_DATA[37]=CH7_SW;
+ 320   1        TEMP_DATA[38]=CH8_SW;
+ 321   1        TEMP_DATA[39]=SBUS;
+ 322   1        
+ 323   1        sum=0;
+ 324   1        for(i=0;i<40;i++)
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 7   
+
+ 325   1        {
+ 326   2          sum+=TEMP_DATA[i];
+ 327   2        }
+ 328   1        TEMP_DATA[40]=sum>>8;//写入校验和
+ 329   1        TEMP_DATA[41]=sum;
+ 330   1        
+ 331   1        
+ 332   1        IAP_CONTR=0x83;
+*** ERROR C202 IN LINE 332 OF main.c: 'IAP_CONTR': undefined identifier
+ 333   1          EEPROM_clean(0);
+ 334   1                
+ 335   1          for(i=0;i<42;i++)
+ 336   1          {
+ 337   2            EEPROM_write(0,i,TEMP_DATA[i]);
+ 338   2          }
+ 339   1        
+ 340   1          IAP_CONTR=0;
+*** ERROR C202 IN LINE 340 OF main.c: 'IAP_CONTR': undefined identifier
+ 341   1      }
+ 342          /**************************************************************************/
+ 343          //NRF24L01
+ 344          u8 SPI(u8 byte)
+ 345          {
+ 346   1        u8 i;
+ 347   1        for(i=0;i<8;i++)
+ 348   1        {
+ 349   2          MDI=(byte&0x80);
+*** ERROR C202 IN LINE 349 OF main.c: 'MDI': undefined identifier
+ 350   2          SCK=1;
+*** ERROR C202 IN LINE 350 OF main.c: 'SCK': undefined identifier
+ 351   2          byte<<=1;
+ 352   2          byte|=MDO;
+*** ERROR C202 IN LINE 352 OF main.c: 'MDO': undefined identifier
+ 353   2          SCK=0;
+*** ERROR C202 IN LINE 353 OF main.c: 'SCK': undefined identifier
+ 354   2        }
+ 355   1        return byte;
+ 356   1      }
+ 357          
+ 358          void REG_write(u8 address,u8 command)
+ 359          {
+ 360   1        CSN=0;
+*** ERROR C202 IN LINE 360 OF main.c: 'CSN': undefined identifier
+ 361   1        SPI(0x20+address);
+ 362   1        SPI(command);
+ 363   1        CSN=1;
+*** ERROR C202 IN LINE 363 OF main.c: 'CSN': undefined identifier
+ 364   1      }
+ 365          
+ 366          void FIFO_write(u8 DATA_OUT[],u8 lengh)
+ 367          {
+ 368   1        u8 i;
+ 369   1        CSN=0;
+*** ERROR C202 IN LINE 369 OF main.c: 'CSN': undefined identifier
+ 370   1        SPI(0xa0);
+ 371   1        for(i=0;i<lengh;i++)
+ 372   1        SPI(DATA_OUT[i]);
+ 373   1        CSN=1;
+*** ERROR C202 IN LINE 373 OF main.c: 'CSN': undefined identifier
+ 374   1      }
+ 375          void FIFO_read(u8 DATA_IN[],u8 lengh)   //读取接收数据缓冲区
+ 376          {
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 8   
+
+ 377   1        u8 i;
+ 378   1        CSN=0;
+*** ERROR C202 IN LINE 378 OF main.c: 'CSN': undefined identifier
+ 379   1        SPI(0x61);  //读取命令
+ 380   1        for(i=0;i<lengh;i++)
+ 381   1        DATA_IN[i]=SPI(0);     
+ 382   1        CSN=1;
+*** ERROR C202 IN LINE 382 OF main.c: 'CSN': undefined identifier
+ 383   1      }
+ 384          
+ 385          void TX_address(u8 DATA_IN[])
+ 386          {
+ 387   1        CSN=0;     
+*** ERROR C202 IN LINE 387 OF main.c: 'CSN': undefined identifier
+ 388   1        SPI(0x20+0x10);
+ 389   1        SPI(DATA_IN[0]);
+ 390   1        SPI(DATA_IN[1]);
+ 391   1        SPI(DATA_IN[2]);
+ 392   1        SPI(DATA_IN[3]);
+ 393   1        SPI(DATA_IN[4]);
+ 394   1        CSN=1;  
+*** ERROR C202 IN LINE 394 OF main.c: 'CSN': undefined identifier
+ 395   1      }  
+ 396          void RX_address(u8 DATA_IN[])
+ 397          {
+ 398   1        CSN=0;     
+*** ERROR C202 IN LINE 398 OF main.c: 'CSN': undefined identifier
+ 399   1        SPI(0x20+0x0a);
+ 400   1        SPI(DATA_IN[0]);
+ 401   1        SPI(DATA_IN[1]);
+ 402   1        SPI(DATA_IN[2]);
+ 403   1        SPI(DATA_IN[3]);
+ 404   1        SPI(DATA_IN[4]);
+ 405   1        CSN=1;  
+*** ERROR C202 IN LINE 405 OF main.c: 'CSN': undefined identifier
+ 406   1      }
+ 407          void RX_mode()         
+ 408          {
+ 409   1        CE=0;
+*** ERROR C202 IN LINE 409 OF main.c: 'CE': undefined identifier
+ 410   1        REG_write(0x00,0x3b); //CRC,8 bit,Power on,RX
+ 411   1        CE=1;
+*** ERROR C202 IN LINE 411 OF main.c: 'CE': undefined identifier
+ 412   1      }            
+ 413            
+ 414          void TX_mode()         
+ 415          {
+ 416   1        CE=0;
+*** ERROR C202 IN LINE 416 OF main.c: 'CE': undefined identifier
+ 417   1        REG_write(0x00,0x0a);
+ 418   1        CE=1;
+*** ERROR C202 IN LINE 418 OF main.c: 'CE': undefined identifier
+ 419   1      }
+ 420          
+ 421          void  NRF_power(u8 P)       //发射功率设置 250k
+ 422          {                           
+ 423   1        CE=0;
+*** ERROR C202 IN LINE 423 OF main.c: 'CE': undefined identifier
+ 424   1        if(P==3)REG_write(0x06,0x27);     //0db 修正之前注释错误
+ 425   1        else if(P==2)REG_write(0x06,0x25);    //-6db
+ 426   1        else if(P==1)REG_write(0x06,0x23);    //-12db
+ 427   1        else if(P==0)REG_write(0x06,0x21);    //-18db
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 9   
+
+ 428   1        CE=1;
+*** ERROR C202 IN LINE 428 OF main.c: 'CE': undefined identifier
+ 429   1      }
+ 430          
+ 431          void NRF_size(u8 l)
+ 432          {
+ 433   1        CE=0;
+*** ERROR C202 IN LINE 433 OF main.c: 'CE': undefined identifier
+ 434   1        REG_write(0x11,l);  
+ 435   1        CE=1;
+*** ERROR C202 IN LINE 435 OF main.c: 'CE': undefined identifier
+ 436   1      }
+ 437          
+ 438          void NRF_channel(u8 c)
+ 439          {
+ 440   1        CE=0;
+*** ERROR C202 IN LINE 440 OF main.c: 'CE': undefined identifier
+ 441   1        REG_write(0x05,c);  
+ 442   1        CE=1;
+*** ERROR C202 IN LINE 442 OF main.c: 'CE': undefined identifier
+ 443   1      }
+ 444          
+ 445          
+ 446          void NRF_init()
+ 447          { 
+ 448   1        CE=0;
+*** ERROR C202 IN LINE 448 OF main.c: 'CE': undefined identifier
+ 449   1        SCK=0;
+*** ERROR C202 IN LINE 449 OF main.c: 'SCK': undefined identifier
+ 450   1        REG_write(0x01,0x00); //禁止 自动应答
+ 451   1        REG_write(0x02,0x01); //允许 P0信道
+ 452   1        REG_write(0x04,0x00); //禁止 自动重发
+ 453   1        RX_mode();    //   REG_write(0x1d,0x01);
+ 454   1        NRF_channel(66);
+ 455   1        NRF_power(TX_power);
+ 456   1        NRF_size(11);
+ 457   1        RX_address(address);
+ 458   1        TX_address(address);
+ 459   1      }
+ 460          
+ 461          void NRF_test() //无线模块终极测试
+ 462          { 
+ 463   1        u8 reset_err=0;
+ 464   1        CE=0;
+*** ERROR C202 IN LINE 464 OF main.c: 'CE': undefined identifier
+ 465   1        SCK=0;
+*** ERROR C202 IN LINE 465 OF main.c: 'SCK': undefined identifier
+ 466   1        CSN=0;
+*** ERROR C202 IN LINE 466 OF main.c: 'CSN': undefined identifier
+ 467   1        
+ 468   1        if(SPI(0x20)!=0x0e){reset_err=1;}
+ 469   1        SPI(0x0a);
+ 470   1      
+ 471   1        CSN=1;
+*** ERROR C202 IN LINE 471 OF main.c: 'CSN': undefined identifier
+ 472   1      
+ 473   1        CSN=0;
+*** ERROR C202 IN LINE 473 OF main.c: 'CSN': undefined identifier
+ 474   1        SPI(0x00);
+ 475   1      
+ 476   1        if(SPI(0x00)!=0x0a){NRF_error|=0x02;}//MOSI bad
+ 477   1        CSN=1;
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 10  
+
+*** ERROR C202 IN LINE 477 OF main.c: 'CSN': undefined identifier
+ 478   1      
+ 479   1        REG_write(0x01,0x00);
+ 480   1        REG_write(0x04,0x00);
+ 481   1        REG_write(0x11,1);
+ 482   1        
+ 483   1        FIFO_write(tx,1);
+ 484   1        CE=1;
+*** ERROR C202 IN LINE 484 OF main.c: 'CE': undefined identifier
+ 485   1      
+ 486   1        delay_ms(2);
+ 487   1        
+ 488   1        CSN=0;
+*** ERROR C202 IN LINE 488 OF main.c: 'CSN': undefined identifier
+ 489   1      
+ 490   1        if(SPI(0x00)!=0x2e){NRF_error|=0x04;}//CE bad
+ 491   1        CSN=1;
+*** ERROR C202 IN LINE 491 OF main.c: 'CSN': undefined identifier
+ 492   1          
+ 493   1        if(IRQ)NRF_error|=0x18; //IRQ bad
+*** ERROR C202 IN LINE 493 OF main.c: 'IRQ': undefined identifier
+ 494   1        else 
+ 495   1        {
+ 496   2          if(NRF_error&0x04==0)NRF_error|=0x10;   //MISO bad
+ 497   2        }
+ 498   1        CE=1;
+*** ERROR C202 IN LINE 498 OF main.c: 'CE': undefined identifier
+ 499   1        
+ 500   1        if(reset_err&&NRF_error>1)NRF_error|=0x01;//CSN,CLK bad
+ 501   1        
+ 502   1        REG_write(0x07,0x20); //清除TX中断信号
+ 503   1      }
+ 504          
+ 505          void receiver_connect()
+ 506          {
+ 507   1        u8 t;
+ 508   1        NRF_power(0);
+ 509   1        NRF_channel(33);
+ 510   1        TX_address(address_0);
+ 511   1        RX_address(address_0);
+ 512   1        while(IRQ);
+*** ERROR C202 IN LINE 512 OF main.c: 'IRQ': undefined identifier
+ 513   1        FIFO_read(rx,11);   //读取接收数据
+ 514   1        CE=0;
+*** ERROR C202 IN LINE 514 OF main.c: 'CE': undefined identifier
+ 515   1        REG_write(0x07,0x40); //清除无线模块中断信号
+ 516   1        CE=1;
+*** ERROR C202 IN LINE 516 OF main.c: 'CE': undefined identifier
+ 517   1        if(rx[0]==0xa0)
+ 518   1        {
+ 519   2          hopping[0]=rx[1];
+ 520   2          hopping[1]=rx[2];
+ 521   2          hopping[2]=rx[3];
+ 522   2          hopping[3]=rx[4];
+ 523   2          hopping[4]=rx[5];
+ 524   2          address[0]=rx[6];
+ 525   2          address[1]=rx[7];
+ 526   2          address[2]=rx[8];
+ 527   2          address[3]=rx[9];
+ 528   2          address[4]=rx[10];
+ 529   2        }
+ 530   1        
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 11  
+
+ 531   1        tx[0]='O',tx[1]='K';
+ 532   1        connecting=1;
+ 533   1        while(connecting)
+ 534   1        {
+ 535   2          TX_mode();    
+ 536   2          NRF_channel(33);
+ 537   2          TX_address(address_0);
+ 538   2          RX_address(address_0);
+ 539   2          FIFO_write(tx,11);
+ 540   2          Delay1ms();
+ 541   2          
+ 542   2          RX_mode();
+ 543   2          NRF_channel(hopping[0]);
+ 544   2          TX_address(address);
+ 545   2          RX_address(address);
+ 546   2          while(1)
+ 547   2          {
+ 548   3            Delay1ms();
+ 549   3            if(IRQ==0)
+*** ERROR C202 IN LINE 549 OF main.c: 'IRQ': undefined identifier
+ 550   3            {
+ 551   4              FIFO_read(rx,11);   //读取接收数据
+ 552   4              CE=0;
+*** ERROR C202 IN LINE 552 OF main.c: 'CE': undefined identifier
+ 553   4              REG_write(0x07,0x40); //清除无线模块中断信号
+ 554   4              CE=1;  
+*** ERROR C202 IN LINE 554 OF main.c: 'CE': undefined identifier
+ 555   4              connecting=0;break;
+ 556   4            }
+ 557   3            t++;if(t>100){t=0;break;}
+ 558   3          }       
+ 559   2        }
+ 560   1          DATA_save();
+ 561   1        RX_address(address);
+ 562   1        TX_address(address);
+ 563   1        NRF_power(3);
+ 564   1      }
+ 565          
+ 566          /**************************************************************************/
+ 567          
+ 568          void data_check(int x,int max,int min)
+ 569          {
+ 570   1        
+ 571   1        if(x>max)x=max;
+ 572   1        if(x<min)x=min;
+ 573   1      
+ 574   1      }
+ 575          
+ 576          void Get_Sbus_data()
+ 577          {
+ 578   1        Sbus_data[0]=CH_data[0]<<1;
+ 579   1        Sbus_data[1]=CH_data[1]<<1;
+ 580   1        Sbus_data[2]=CH_data[2]<<1;
+ 581   1        Sbus_data[3]=CH_data[3]<<1;
+ 582   1        Sbus_data[4]=CH_data[4]<<1;
+ 583   1        Sbus_data[5]=CH_data[5]<<1;
+ 584   1        Sbus_data[6]=CH_data[6]<<1;
+ 585   1        Sbus_data[7]=CH_data[7]<<1;
+ 586   1      
+ 587   1        
+ 588   1      
+ 589   1        Sbus_buff[1]=Sbus_data[0];//CH1~CH8
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 12  
+
+ 590   1        Sbus_buff[2]=Sbus_data[0]>>8;
+ 591   1        Sbus_buff[2]+=Sbus_data[1]<<3;
+ 592   1      
+ 593   1        Sbus_buff[3]=Sbus_data[1]>>5;
+ 594   1        Sbus_buff[3]+=Sbus_data[2]<<6;
+ 595   1      
+ 596   1        Sbus_buff[4]=Sbus_data[2]>>2;
+ 597   1        
+ 598   1        Sbus_buff[5]=Sbus_data[2]>>10;
+ 599   1          Sbus_buff[5]+=Sbus_data[3]<<1;
+ 600   1        
+ 601   1        Sbus_buff[6]=Sbus_data[3]>>7;
+ 602   1          Sbus_buff[6]+=Sbus_data[4]<<4;
+ 603   1        
+ 604   1        Sbus_buff[7]=Sbus_data[4]>>4;
+ 605   1          Sbus_buff[7]+=Sbus_data[5]<<7;
+ 606   1          
+ 607   1        Sbus_buff[8]=Sbus_data[5]>>1;
+ 608   1          
+ 609   1        Sbus_buff[9]=Sbus_data[5]>>9;
+ 610   1          Sbus_buff[9]+=Sbus_data[6]<<2;
+ 611   1          
+ 612   1        Sbus_buff[10]=Sbus_data[6]>>6;
+ 613   1          Sbus_buff[10]+=Sbus_data[7]<<5;
+ 614   1          
+ 615   1        Sbus_buff[11]=Sbus_data[7]>>3;
+ 616   1        
+ 617   1        Sbus_tx[0]=0x0f;//Star        
+ 618   1        Sbus_tx[1]=Sbus_buff[1];//CH1~CH8
+ 619   1        Sbus_tx[2]=Sbus_buff[2];
+ 620   1        Sbus_tx[3]=Sbus_buff[3];
+ 621   1        Sbus_tx[4]=Sbus_buff[4];
+ 622   1        Sbus_tx[5]=Sbus_buff[5];
+ 623   1        Sbus_tx[6]=Sbus_buff[6];
+ 624   1        Sbus_tx[7]=Sbus_buff[7];
+ 625   1        Sbus_tx[8]=Sbus_buff[8];
+ 626   1        Sbus_tx[9]=Sbus_buff[9];
+ 627   1        Sbus_tx[10]=Sbus_buff[10];
+ 628   1        Sbus_tx[11]=Sbus_buff[11];        
+ 629   1        Sbus_tx[12]=0;//CH9~CH16
+ 630   1        Sbus_tx[13]=0;
+ 631   1        Sbus_tx[14]=0;
+ 632   1        Sbus_tx[15]=0;
+ 633   1        Sbus_tx[16]=0;
+ 634   1        Sbus_tx[17]=0;
+ 635   1        Sbus_tx[18]=0;
+ 636   1        Sbus_tx[19]=0;
+ 637   1        Sbus_tx[20]=0;
+ 638   1        Sbus_tx[21]=0;
+ 639   1        Sbus_tx[22]=0;        
+ 640   1        Sbus_tx[23]=0;//flag
+ 641   1        Sbus_tx[24]=0;//End
+ 642   1      }
+ 643          
+ 644          void Cycle()
+ 645          {
+ 646   1        timer1++;
+ 647   1        if(timer1>333)      //每秒统计接收到的有效信号，小于20个点亮LED示警，表示信号微弱
+ 648   1        {
+ 649   2          timer1=333;
+ 650   2          rx_num=0;
+ 651   2          Light_LED=2;
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 13  
+
+ 652   2        }
+ 653   1        
+ 654   1        
+ 655   1        timer2++;
+ 656   1        if(timer2>333)
+ 657   1        {
+ 658   2          timer2=0;
+ 659   2          rx_num=receive;
+ 660   2          receive=0;
+ 661   2        }
+ 662   1        
+ 663   1        timer3++;
+ 664   1        if(timer3>666)//信号丢失2秒触发失控保护
+ 665   1        {
+ 666   2          timer3=666;
+ 667   2          CH_data[0]=out_control_data[0];
+ 668   2          CH_data[1]=out_control_data[1];
+ 669   2          CH_data[2]=out_control_data[2];
+ 670   2          CH_data[3]=out_control_data[3];
+ 671   2          CH_data[4]=out_control_data[4];
+ 672   2          CH_data[5]=out_control_data[5];
+ 673   2          CH_data[6]=out_control_data[6];
+ 674   2          CH_data[7]=out_control_data[7];
+ 675   2          
+ 676   2          Get_Sbus_data();
+ 677   2        }
+ 678   1        
+ 679   1        if(Data_change)
+ 680   1        {
+ 681   2          timer4++;
+ 682   2          if(timer4>333)
+ 683   2          {
+ 684   3            timer4=0;
+ 685   3            Data_change=0;
+ 686   3            DATA_save();
+ 687   3          } 
+ 688   2        }
+ 689   1        
+ 690   1        if(Light_LED==1)
+ 691   1        {
+ 692   2          LED=0;
+*** ERROR C202 IN LINE 692 OF main.c: 'LED': undefined identifier
+ 693   2          timer5++;
+ 694   2          if(timer5>10)
+ 695   2          {
+ 696   3            timer5=0;
+ 697   3            Light_LED=0;
+ 698   3            
+ 699   3          }
+ 700   2        }
+ 701   1        else if(Light_LED==2)LED=0;
+*** ERROR C202 IN LINE 701 OF main.c: 'LED': undefined identifier
+ 702   1        else LED=1;
+*** ERROR C202 IN LINE 702 OF main.c: 'LED': undefined identifier
+ 703   1      
+ 704   1          
+ 705   1        m++;          //两个标志位循环跳频
+ 706   1        if(jump_1==0)
+ 707   1        {
+ 708   2          if(m>7)lose=0,jump_1=1,jump_2=0;    //未收到信号，开始第一跳
+ 709   2        }
+ 710   1        else
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 14  
+
+ 711   1        {
+ 712   2          if(jump_2==0)
+ 713   2          {
+ 714   3            if(m>14)lose=0,jump_2=1;     //第一跳之后仍无信号，开始第二跳
+ 715   3          }
+ 716   2          else
+ 717   2          {
+ 718   3             if(m>22)m=0,lose=0,jump_1=0;  //第二跳之后仍无信号，复位重新跳。
+ 719   3            
+ 720   3          }   
+ 721   2        } 
+ 722   1        
+ 723   1        t_adc++;
+ 724   1        if(t_adc==1)
+ 725   1        {
+ 726   2          adc1=ADC_RES;
+*** ERROR C202 IN LINE 726 OF main.c: 'ADC_RES': undefined identifier
+ 727   2          adc1<<=2,adc1+=ADC_RESL;
+*** ERROR C202 IN LINE 727 OF main.c: 'ADC_RESL': undefined identifier
+ 728   2          
+ 729   2          last_adc1=(adc1+last_adc1*9/10);
+ 730   2          
+ 731   2          P1ASF=0x02;
+*** ERROR C202 IN LINE 731 OF main.c: 'P1ASF': undefined identifier
+ 732   2          ADC_CONTR=0x89; 
+*** ERROR C202 IN LINE 732 OF main.c: 'ADC_CONTR': undefined identifier
+ 733   2        }
+ 734   1        else if(t_adc==2)
+ 735   1        {
+ 736   2          t_adc=0;
+ 737   2          adc2=ADC_RES;
+*** ERROR C202 IN LINE 737 OF main.c: 'ADC_RES': undefined identifier
+ 738   2          adc2<<=2,adc2+=ADC_RESL;
+*** ERROR C202 IN LINE 738 OF main.c: 'ADC_RESL': undefined identifier
+ 739   2          
+ 740   2          last_adc2=(adc2+last_adc2*9/10);
+ 741   2          
+ 742   2          P1ASF=0x00;
+*** ERROR C202 IN LINE 742 OF main.c: 'P1ASF': undefined identifier
+ 743   2          ADC_CONTR=0x88; 
+*** ERROR C202 IN LINE 743 OF main.c: 'ADC_CONTR': undefined identifier
+ 744   2        }
+ 745   1        
+ 746   1      }
+ 747          
+ 748          /*************************************************************/
+ 749          //串口通信
+ 750          
+ 751          
+ 752          void UartInit(void)   //100000bps@12.000MHz
+ 753          {
+ 754   1        SCON = 0xD0;    //9位数据,可变波特率
+*** ERROR C202 IN LINE 754 OF main.c: 'SCON': undefined identifier
+ 755   1        AUXR |= 0x01;   //串口1选择定时器2为波特率发生器
+*** ERROR C202 IN LINE 755 OF main.c: 'AUXR': undefined identifier
+ 756   1        AUXR |= 0x04;   //定时器2时钟为Fosc,即1T
+*** ERROR C202 IN LINE 756 OF main.c: 'AUXR': undefined identifier
+ 757   1        T2L = 0xE2;   //设定定时初值
+*** ERROR C202 IN LINE 757 OF main.c: 'T2L': undefined identifier
+ 758   1        T2H = 0xFF;   //设定定时初值
+*** ERROR C202 IN LINE 758 OF main.c: 'T2H': undefined identifier
+ 759   1      
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 15  
+
+ 760   1      }
+ 761          
+ 762          void LED_flash(u8 t)
+ 763          {
+ 764   1        
+ 765   1        while(t)
+ 766   1        {
+ 767   2          LED=0;    
+*** ERROR C202 IN LINE 767 OF main.c: 'LED': undefined identifier
+ 768   2          delay_ms(50);
+ 769   2          LED=1;    
+*** ERROR C202 IN LINE 769 OF main.c: 'LED': undefined identifier
+ 770   2          delay_ms(50);
+ 771   2          t--;
+ 772   2        }
+ 773   1      }
+ 774          
+ 775          void initial()
+ 776          { 
+ 777   1      
+ 778   1        
+ 779   1        
+ 780   1        CH5=0;CH6=1;      //如果CH5与CH6被短接，重新对码
+*** ERROR C202 IN LINE 780 OF main.c: 'CH5': undefined identifier
+*** ERROR C202 IN LINE 780 OF main.c: 'CH6': undefined identifier
+ 781   1        Delay1ms();
+ 782   1        if(CH6==0)      //修正通道6插上舵机不能用
+*** ERROR C202 IN LINE 782 OF main.c: 'CH6': undefined identifier
+ 783   1        {
+ 784   2          P3M0=0x02;    //插上舵机也会使CH6为0，所以将CH5设为推挽
+*** ERROR C202 IN LINE 784 OF main.c: 'P3M0': undefined identifier
+ 785   2          CH5=1;
+*** ERROR C202 IN LINE 785 OF main.c: 'CH5': undefined identifier
+ 786   2          Delay1ms();
+ 787   2          if(CH6)restar=1;   //如果CH6被拉高，说明5/6通道短接，启动重新对码
+*** ERROR C202 IN LINE 787 OF main.c: 'CH6': undefined identifier
+ 788   2        }
+ 789   1        CH5=0;CH6=0;
+*** ERROR C202 IN LINE 789 OF main.c: 'CH5': undefined identifier
+*** ERROR C202 IN LINE 789 OF main.c: 'CH6': undefined identifier
+ 790   1          
+ 791   1        
+ 792   1        P3M0=0xcf;   //
+*** ERROR C202 IN LINE 792 OF main.c: 'P3M0': undefined identifier
+ 793   1        P1M1=0x02;  //将通道输出IO口配置为推挽模式，保证正常驱动电调与舵机
+*** ERROR C202 IN LINE 793 OF main.c: 'P1M1': undefined identifier
+ 794   1          
+ 795   1        
+ 796   1        while(1)
+ 797   1        {
+ 798   2          if(EEPROM_test(2))break;
+ 799   2          else delay_ms(100);
+ 800   2        }
+ 801   1        
+ 802   1        DATA_read();
+ 803   1        data_check(out_control_data[0],1023,0);
+ 804   1        data_check(out_control_data[1],1023,0);
+ 805   1        data_check(out_control_data[2],1023,0);
+ 806   1        data_check(out_control_data[3],1023,0);
+ 807   1        data_check(out_control_data[4],1023,0);
+ 808   1        data_check(out_control_data[5],1023,0);
+ 809   1        data_check(out_control_data[6],1023,0);
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 16  
+
+ 810   1        data_check(out_control_data[7],1023,0);
+ 811   1        
+ 812   1        
+ 813   1        
+ 814   1      
+ 815   1        NRF_test();
+ 816   1        if(NRF_error)//模块错误闪灯
+ 817   1        {
+ 818   2          LED_flash(10);
+ 819   2        }
+ 820   1        
+ 821   1        NRF_init();
+ 822   1      
+ 823   1        
+ 824   1      
+ 825   1        if(restar)first=1;
+ 826   1        if(first)
+ 827   1        {
+ 828   2          receiver_connect();
+ 829   2        }
+ 830   1        
+ 831   1      }
+ 832          
+ 833                                                 
+ 834          
+ 835          main()
+ 836          { 
+ 837   1        CH1=0;
+*** ERROR C202 IN LINE 837 OF main.c: 'CH1': undefined identifier
+ 838   1        CH2=0;
+*** ERROR C202 IN LINE 838 OF main.c: 'CH2': undefined identifier
+ 839   1        CH3=0;
+*** ERROR C202 IN LINE 839 OF main.c: 'CH3': undefined identifier
+ 840   1        CH4=0;
+*** ERROR C202 IN LINE 840 OF main.c: 'CH4': undefined identifier
+ 841   1        CH5=0;
+*** ERROR C202 IN LINE 841 OF main.c: 'CH5': undefined identifier
+ 842   1        CH6=0;
+*** ERROR C202 IN LINE 842 OF main.c: 'CH6': undefined identifier
+ 843   1        CH7=0;
+*** ERROR C202 IN LINE 843 OF main.c: 'CH7': undefined identifier
+ 844   1        CH8=0;
+*** ERROR C202 IN LINE 844 OF main.c: 'CH8': undefined identifier
+ 845   1        
+ 846   1      /*  while(PCON)
+ 847   1        {
+ 848   1          PCON=0;
+ 849   1          Delay1ms();
+ 850   1        }*/
+ 851   1        
+ 852   1          
+ 853   1        delay_ms(200);
+ 854   1        LED=0;
+*** ERROR C202 IN LINE 854 OF main.c: 'LED': undefined identifier
+ 855   1        delay_ms(200);//开机延时以避过电源波动
+ 856   1        
+ 857   1        initial();
+ 858   1        LED=1;    //点亮指示灯再关闭，表示单片机正常工作
+*** ERROR C202 IN LINE 858 OF main.c: 'LED': undefined identifier
+ 859   1        
+ 860   1      
+ 861   1        ADC_CONTR=0x80;    //ADC上电
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 17  
+
+*** ERROR C202 IN LINE 861 OF main.c: 'ADC_CONTR': undefined identifier
+ 862   1      
+ 863   1        P_SW1=0x10;//PWM引脚切换到P3口
+*** ERROR C202 IN LINE 863 OF main.c: 'P_SW1': undefined identifier
+ 864   1        PCA_PWM2=0x03;
+*** ERROR C202 IN LINE 864 OF main.c: 'PCA_PWM2': undefined identifier
+ 865   1        PCA_PWM1=0x03;
+*** ERROR C202 IN LINE 865 OF main.c: 'PCA_PWM1': undefined identifier
+ 866   1        if(CH1_PWM)CCAPM2=0x42;
+*** ERROR C202 IN LINE 866 OF main.c: 'CCAPM2': undefined identifier
+ 867   1        if(CH2_PWM)CCAPM1=0x42;
+*** ERROR C202 IN LINE 867 OF main.c: 'CCAPM1': undefined identifier
+ 868   1      
+ 869   1            
+ 870   1        IP=0x02; //T0高优先
+*** ERROR C202 IN LINE 870 OF main.c: 'IP': undefined identifier
+ 871   1        IE=0x82; //允许T0中断
+*** ERROR C202 IN LINE 871 OF main.c: 'IE': undefined identifier
+ 872   1        
+ 873   1      
+ 874   1        if(SBUS)
+ 875   1        {
+ 876   2          UartInit();
+ 877   2          CMOD=0x01;//允许PCA中断
+*** ERROR C202 IN LINE 877 OF main.c: 'CMOD': undefined identifier
+ 878   2          IE2=0;CH5=1;
+*** ERROR C202 IN LINE 878 OF main.c: 'IE2': undefined identifier
+*** ERROR C202 IN LINE 878 OF main.c: 'CH5': undefined identifier
+ 879   2        }
+ 880   1        else
+ 881   1        {
+ 882   2          T2L=0x47,T2H=0xf4;//T2 3ms
+*** ERROR C202 IN LINE 882 OF main.c: 'T2L': undefined identifier
+ 883   2          IE2=0x04;//允许T2中断
+*** ERROR C202 IN LINE 883 OF main.c: 'IE2': undefined identifier
+ 884   2          CMOD=0;
+*** ERROR C202 IN LINE 884 OF main.c: 'CMOD': undefined identifier
+ 885   2        }
+ 886   1                
+ 887   1      
+ 888   1        
+ 889   1        TMOD=0x00;  //定时器模式0
+*** ERROR C202 IN LINE 889 OF main.c: 'TMOD': undefined identifier
+ 890   1      
+ 891   1        AUXR|=0x10;     //打开定时器2
+*** ERROR C202 IN LINE 891 OF main.c: 'AUXR': undefined identifier
+ 892   1        CCON=0x40;       //打开PCA定时器
+*** ERROR C202 IN LINE 892 OF main.c: 'CCON': undefined identifier
+ 893   1        
+ 894   1      /*  
+ 895   1      while(1)
+ 896   1      {
+ 897   1        SBUF=0xf0;
+ 898   1        delay_ms(10);
+ 899   1      }*/
+ 900   1        
+ 901   1        NRF_channel(hopping[0]);
+ 902   1        
+ 903   1        
+ 904   1        while(IRQ);
+*** ERROR C202 IN LINE 904 OF main.c: 'IRQ': undefined identifier
+ 905   1        TR0=1;
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 18  
+
+*** ERROR C202 IN LINE 905 OF main.c: 'TR0': undefined identifier
+ 906   1        lose=1;
+ 907   1        
+ 908   1        while(1)
+ 909   1        { 
+ 910   2          while(IRQ&lose);
+*** ERROR C202 IN LINE 910 OF main.c: 'IRQ': undefined identifier
+ 911   2          if(lose)
+ 912   2          { 
+ 913   3            jump_1=0;jump_2=0;hopping_count=0;//收到有效信号后刷新跳频器
+ 914   3            receive++;timer1=0;timer3=0;m=0;  
+ 915   3            if(Light_LED)Light_LED=0;
+ 916   3            
+ 917   3            FIFO_read(rx,11);   //读取接收数据
+ 918   3            CE=0;
+*** ERROR C202 IN LINE 918 OF main.c: 'CE': undefined identifier
+ 919   3            REG_write(0x07,0x40); //清除无线模块中断信号
+ 920   3            CE=1;
+*** ERROR C202 IN LINE 920 OF main.c: 'CE': undefined identifier
+ 921   3            
+ 922   3            TX_mode();
+ 923   3            tx[0]=rx_num;
+ 924   3            voltage_bec=1299210/last_adc1;
+ 925   3            tx[1]=voltage_bec>>8;
+ 926   3            tx[2]=voltage_bec;
+ 927   3            voltage_total=(long)last_adc2*voltage_bec*3/10240;
+ 928   3            tx[3]=voltage_total>>8;
+ 929   3            tx[4]=voltage_total;
+ 930   3            
+ 931   3            FIFO_write(tx,11);
+ 932   3            Delay1ms();
+ 933   3      
+ 934   3            RX_mode();
+ 935   3                  
+ 936   3            if(jump_mode)
+ 937   3            {
+ 938   4              jump_mode=0;
+ 939   4              hopping_turn=random[hopping_num];
+ 940   4            }
+ 941   3            hopping_turn++;
+ 942   3            if(hopping_turn>4)hopping_turn=0;
+ 943   3            NRF_channel(hopping[hopping_turn]);
+ 944   3            
+ 945   3      
+ 946   3      
+ 947   3            if(rx[0]==0xa2)
+ 948   3            {
+ 949   4              Light_LED=1;
+ 950   4              
+ 951   4              if(rx[1]&0x80)
+ 952   4              {
+ 953   5                PPM_OUT=1;
+ 954   5              }
+ 955   4              else 
+ 956   4              {
+ 957   5                PPM_OUT=0;
+ 958   5              }
+ 959   4              
+ 960   4              if(rx[1]&0x40)
+ 961   4              {
+ 962   5                SBUS=1;
+ 963   5              }
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 19  
+
+ 964   4              else 
+ 965   4              {
+ 966   5                SBUS=0;
+ 967   5              }
+ 968   4              
+ 969   4              if(SBUS)
+ 970   4              {
+ 971   5                UartInit();
+ 972   5                CMOD=0x01;//允许PCA中断
+*** ERROR C202 IN LINE 972 OF main.c: 'CMOD': undefined identifier
+ 973   5                IE2=0;
+*** ERROR C202 IN LINE 973 OF main.c: 'IE2': undefined identifier
+ 974   5              }
+ 975   4              else
+ 976   4              {
+ 977   5                T2L=0x47,T2H=0xf4;//T2 3ms
+*** ERROR C202 IN LINE 977 OF main.c: 'T2L': undefined identifier
+ 978   5                AUXR &= 0xFB;//12T
+*** ERROR C202 IN LINE 978 OF main.c: 'AUXR': undefined identifier
+ 979   5                IE2=0x04;//允许T2中断
+*** ERROR C202 IN LINE 979 OF main.c: 'IE2': undefined identifier
+ 980   5                CMOD=0;
+*** ERROR C202 IN LINE 980 OF main.c: 'CMOD': undefined identifier
+ 981   5              }
+ 982   4              
+ 983   4              if(rx[1]&0x08)
+ 984   4              {
+ 985   5                CH1_PWM=1;CCAPM2=0x42;
+*** ERROR C202 IN LINE 985 OF main.c: 'CCAPM2': undefined identifier
+ 986   5              }
+ 987   4              else 
+ 988   4              {
+ 989   5                CH1_PWM=0;CCAPM2=0;
+*** ERROR C202 IN LINE 989 OF main.c: 'CCAPM2': undefined identifier
+ 990   5              }
+ 991   4              
+ 992   4              if(rx[1]&0x04)
+ 993   4              {
+ 994   5                CH2_PWM=1;CCAPM1=0x42;
+*** ERROR C202 IN LINE 994 OF main.c: 'CCAPM1': undefined identifier
+ 995   5              }
+ 996   4              else 
+ 997   4              {
+ 998   5                CH2_PWM=0;CCAPM1=0;
+*** ERROR C202 IN LINE 998 OF main.c: 'CCAPM1': undefined identifier
+ 999   5              }
+1000   4              
+1001   4              if(rx[1]&0x02)
+1002   4              {
+1003   5                CH7_PWM=1;CCAPM0=0x42;
+*** ERROR C202 IN LINE 1003 OF main.c: 'CCAPM0': undefined identifier
+1004   5              }
+1005   4              else 
+1006   4              {
+1007   5                CH7_PWM=0;CCAPM0=0;
+*** ERROR C202 IN LINE 1007 OF main.c: 'CCAPM0': undefined identifier
+1008   5              }
+1009   4              
+1010   4              if(rx[2]&0x80)CH1_SW=1;
+1011   4              else CH1_SW=0;
+1012   4              if(rx[2]&0x40)CH2_SW=1;
+1013   4              else CH2_SW=0;
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 20  
+
+1014   4              if(rx[2]&0x20)CH3_SW=1;
+1015   4              else CH3_SW=0;
+1016   4              if(rx[2]&0x10)CH4_SW=1;
+1017   4              else CH4_SW=0;
+1018   4              if(rx[2]&0x08)CH5_SW=1;
+1019   4              else CH5_SW=0;
+1020   4              if(rx[2]&0x04)CH6_SW=1;
+1021   4              else CH6_SW=0;
+1022   4              if(rx[2]&0x02)CH7_SW=1;
+1023   4              else CH7_SW=0;
+1024   4              if(rx[2]&0x01)CH8_SW=1;
+1025   4              else CH8_SW=0;
+1026   4              
+1027   4              
+1028   4              Data_change=1;timer4=0;
+1029   4            }
+1030   3            else if(rx[0]==0xa0)
+1031   3            {
+1032   4              Light_LED=1;LED=0;
+*** ERROR C202 IN LINE 1032 OF main.c: 'LED': undefined identifier
+1033   4              
+1034   4              buff[0]=rx[1];
+1035   4              buff[0]<<=2;
+1036   4              buff[0]+=rx[2]>>6;
+1037   4              buff[1]=rx[2]&0x3f;
+1038   4              buff[1]<<=4;
+1039   4              buff[1]+=rx[3]>>4;      
+1040   4              buff[2]=rx[3]&0x0f;
+1041   4              buff[2]<<=6;
+1042   4              buff[2]+=rx[4]>>2;
+1043   4              buff[3]=rx[4]&0x03;
+1044   4              buff[3]<<=8;
+1045   4              buff[3]+=rx[5];
+1046   4      
+1047   4              buff[4]=rx[6];
+1048   4              buff[4]<<=2;
+1049   4              buff[4]+=rx[7]>>6;
+1050   4              buff[5]=rx[7]&0x3f;
+1051   4              buff[5]<<=4;
+1052   4              buff[5]+=rx[8]>>4;      
+1053   4              buff[6]=rx[8]&0x0f;
+1054   4              buff[6]<<=6;
+1055   4              buff[6]+=rx[9]>>2;
+1056   4              buff[7]=rx[9]&0x03;
+1057   4              buff[7]<<=8;
+1058   4              buff[7]+=rx[10];
+1059   4              
+1060   4              
+1061   4              data_check(buff[0],1023,0);
+1062   4              data_check(buff[1],1023,0);
+1063   4              data_check(buff[2],1023,0);
+1064   4              data_check(buff[3],1023,0);
+1065   4              data_check(buff[4],1023,0);
+1066   4              data_check(buff[5],1023,0);
+1067   4              data_check(buff[6],1023,0);
+1068   4              data_check(buff[7],1023,0);
+1069   4              
+1070   4              out_control_data[0]=buff[0];
+1071   4              out_control_data[1]=buff[1];
+1072   4              out_control_data[2]=buff[2];
+1073   4              out_control_data[3]=buff[3];
+1074   4              out_control_data[4]=buff[4];
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 21  
+
+1075   4              out_control_data[5]=buff[5];
+1076   4              out_control_data[6]=buff[6];
+1077   4              out_control_data[7]=buff[7];
+1078   4              
+1079   4              
+1080   4              Data_change=1;timer4=0;
+1081   4              
+1082   4              
+1083   4            }
+1084   3            else if(rx[0]==0xa1)
+1085   3            {
+1086   4              buff[0]=rx[1];
+1087   4              buff[0]<<=2;
+1088   4              buff[0]+=rx[2]>>6;
+1089   4              buff[1]=rx[2]&0x3f;
+1090   4              buff[1]<<=4;
+1091   4              buff[1]+=rx[3]>>4;      
+1092   4              buff[2]=rx[3]&0x0f;
+1093   4              buff[2]<<=6;
+1094   4              buff[2]+=rx[4]>>2;
+1095   4              buff[3]=rx[4]&0x03;
+1096   4              buff[3]<<=8;
+1097   4              buff[3]+=rx[5];
+1098   4      
+1099   4              buff[4]=rx[6];
+1100   4              buff[4]<<=2;
+1101   4              buff[4]+=rx[7]>>6;
+1102   4              buff[5]=rx[7]&0x3f;
+1103   4              buff[5]<<=4;
+1104   4              buff[5]+=rx[8]>>4;      
+1105   4              buff[6]=rx[8]&0x0f;
+1106   4              buff[6]<<=6;
+1107   4              buff[6]+=rx[9]>>2;
+1108   4              buff[7]=rx[9]&0x03;
+1109   4              buff[7]<<=8;
+1110   4              buff[7]+=rx[10];
+1111   4              
+1112   4              
+1113   4              data_check(buff[0],1023,0);
+1114   4              data_check(buff[1],1023,0);
+1115   4              data_check(buff[2],1023,0);
+1116   4              data_check(buff[3],1023,0);
+1117   4              data_check(buff[4],1023,0);
+1118   4              data_check(buff[5],1023,0);
+1119   4              data_check(buff[6],1023,0);
+1120   4              data_check(buff[7],1023,0);
+1121   4              
+1122   4              CH_data[0]=buff[0];
+1123   4              CH_data[1]=buff[1];
+1124   4              CH_data[2]=buff[2];
+1125   4              CH_data[3]=buff[3];
+1126   4              CH_data[4]=buff[4];
+1127   4              CH_data[5]=buff[5];
+1128   4              CH_data[6]=buff[6];
+1129   4              CH_data[7]=buff[7];
+1130   4              
+1131   4              Get_Sbus_data();
+1132   4      
+1133   4      
+1134   4      
+1135   4      
+1136   4            }
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 22  
+
+1137   3            
+1138   3            
+1139   3      
+1140   3      
+1141   3          }
+1142   2          else
+1143   2          {
+1144   3            hopping_count++;
+1145   3            if(hopping_count>5)jump_mode=1;
+1146   3            
+1147   3            if(jump_mode)
+1148   3            {
+1149   4              hopping_num++;
+1150   4              if(hopping_num>99)hopping_num=0;
+1151   4              NRF_channel(hopping[random[hopping_num]]);
+1152   4              lose=1;
+1153   4            }
+1154   3            else
+1155   3            {
+1156   4              hopping_turn++;
+1157   4              if(hopping_turn>4)hopping_turn=0;
+1158   4              NRF_channel(hopping[hopping_turn]);
+1159   4              lose=1;
+1160   4            }
+1161   3            
+1162   3          }
+1163   2          
+1164   2        }
+1165   1        
+1166   1      }
+1167          
+1168          
+1169          void ET0_isr()interrupt 1   //定时器0用作信号输出 
+1170          {
+1171   1        u16 temp;
+1172   1        if(PPM_OUT)       //输出8通道PPM，PPM信号总周期20ms，
+1173   1        { 
+1174   2                    //每通道固定0.4ms低电平开始，0.6到1.6ms高电平结束
+1175   2          t_PPMout++;
+1176   2          switch(t_PPMout)
+1177   2          {
+1178   3            case 1:CH1=1;TL0=0x70,TH0=0xfe;temp=64935-CH_data[0];
+*** ERROR C202 IN LINE 1178 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1178 OF main.c: 'TL0': undefined identifier
+1179   3                    T_l=temp;T_h=temp>>8;break;       
+1180   3            case 2:CH1=0;TL0=T_l;TH0=T_h;break;
+*** ERROR C202 IN LINE 1180 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1180 OF main.c: 'TL0': undefined identifier
+*** ERROR C202 IN LINE 1180 OF main.c: 'TH0': undefined identifier
+1181   3            case 3:CH1=1;TL0=0x70,TH0=0xfe;temp=64935-CH_data[1];
+*** ERROR C202 IN LINE 1181 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1181 OF main.c: 'TL0': undefined identifier
+1182   3                    T_l=temp;T_h=temp>>8;break;       
+1183   3            case 4:CH1=0;TL0=T_l;TH0=T_h;break;
+*** ERROR C202 IN LINE 1183 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1183 OF main.c: 'TL0': undefined identifier
+*** ERROR C202 IN LINE 1183 OF main.c: 'TH0': undefined identifier
+1184   3            case 5:CH1=1;TL0=0x70,TH0=0xfe;temp=64935-CH_data[2];
+*** ERROR C202 IN LINE 1184 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1184 OF main.c: 'TL0': undefined identifier
+1185   3                    T_l=temp;T_h=temp>>8;break;       
+1186   3            case 6:CH1=0;TL0=T_l;TH0=T_h;break;
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 23  
+
+*** ERROR C202 IN LINE 1186 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1186 OF main.c: 'TL0': undefined identifier
+*** ERROR C202 IN LINE 1186 OF main.c: 'TH0': undefined identifier
+1187   3            case 7:CH1=1;TL0=0x70,TH0=0xfe;temp=64935-CH_data[3];
+*** ERROR C202 IN LINE 1187 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1187 OF main.c: 'TL0': undefined identifier
+1188   3                    T_l=temp;T_h=temp>>8;break;       
+1189   3            case 8:CH1=0;TL0=T_l;TH0=T_h;break;
+*** ERROR C202 IN LINE 1189 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1189 OF main.c: 'TL0': undefined identifier
+*** ERROR C202 IN LINE 1189 OF main.c: 'TH0': undefined identifier
+1190   3            case 9:CH1=1;TL0=0x70,TH0=0xfe;temp=64935-CH_data[4];
+*** ERROR C202 IN LINE 1190 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1190 OF main.c: 'TL0': undefined identifier
+1191   3                    T_l=temp;T_h=temp>>8;break;       
+1192   3            case 10:CH1=0;TL0=T_l;TH0=T_h;break;
+*** ERROR C202 IN LINE 1192 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1192 OF main.c: 'TL0': undefined identifier
+*** ERROR C202 IN LINE 1192 OF main.c: 'TH0': undefined identifier
+1193   3            case 11:CH1=1;TL0=0x70,TH0=0xfe;temp=64935-CH_data[5];
+*** ERROR C202 IN LINE 1193 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1193 OF main.c: 'TL0': undefined identifier
+1194   3                    T_l=temp;T_h=temp>>8;break;       
+1195   3            case 12:CH1=0;TL0=T_l;TH0=T_h;break;
+*** ERROR C202 IN LINE 1195 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1195 OF main.c: 'TL0': undefined identifier
+*** ERROR C202 IN LINE 1195 OF main.c: 'TH0': undefined identifier
+1196   3            case 13:CH1=1;TL0=0x70,TH0=0xfe;temp=64935-CH_data[6];
+*** ERROR C202 IN LINE 1196 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1196 OF main.c: 'TL0': undefined identifier
+1197   3                    T_l=temp;T_h=temp>>8;break;       
+1198   3            case 14:CH1=0;TL0=T_l;TH0=T_h;break;
+*** ERROR C202 IN LINE 1198 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1198 OF main.c: 'TL0': undefined identifier
+*** ERROR C202 IN LINE 1198 OF main.c: 'TH0': undefined identifier
+1199   3            case 15:CH1=1;TL0=0x70,TH0=0xfe;temp=64935-CH_data[7];
+*** ERROR C202 IN LINE 1199 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1199 OF main.c: 'TL0': undefined identifier
+1200   3                    T_l=temp;T_h=temp>>8;break;       
+1201   3            case 16:CH1=0;TL0=T_l;TH0=T_h;break;
+*** ERROR C202 IN LINE 1201 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1201 OF main.c: 'TL0': undefined identifier
+*** ERROR C202 IN LINE 1201 OF main.c: 'TH0': undefined identifier
+1202   3            
+1203   3            case 17:CH1=1;TL0=0x70,TH0=0xfe;break;        
+*** ERROR C202 IN LINE 1203 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1203 OF main.c: 'TL0': undefined identifier
+1204   3            case 18:CH1=0;TL0=0xf0,TH0=0xd8;t_PPMout=0;break;
+*** ERROR C202 IN LINE 1204 OF main.c: 'CH1': undefined identifier
+*** ERROR C202 IN LINE 1204 OF main.c: 'TL0': undefined identifier
+1205   3            
+1206   3            
+1207   3          }
+1208   2        }
+1209   1        else if(SBUS)
+1210   1        {
+1211   2          CH5=1;
+*** ERROR C202 IN LINE 1211 OF main.c: 'CH5': undefined identifier
+1212   2          if(t_sbus>24)
+1213   2          {
+1214   3            t_sbus=0;
+1215   3          }
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 24  
+
+1216   2          else
+1217   2          {
+1218   3          
+1219   3            if(TI)TI=0;
+*** ERROR C202 IN LINE 1219 OF main.c: 'TI': undefined identifier
+*** ERROR C202 IN LINE 1219 OF main.c: 'TI': undefined identifier
+1220   3            ACC=Sbus_tx[t_sbus];
+*** ERROR C202 IN LINE 1220 OF main.c: 'ACC': undefined identifier
+1221   3            TB8=P;
+*** ERROR C202 IN LINE 1221 OF main.c: 'TB8': undefined identifier
+1222   3            SBUF=ACC; 
+*** ERROR C202 IN LINE 1222 OF main.c: 'SBUF': undefined identifier
+1223   3            
+1224   3            t_sbus++;
+1225   3          }
+1226   2          
+1227   2          
+1228   2          if(t_sbus==25)
+1229   2          {
+1230   3            TL0=0xF0;TH0=0xD8;//10ms
+*** ERROR C202 IN LINE 1230 OF main.c: 'TL0': undefined identifier
+*** ERROR C202 IN LINE 1230 OF main.c: 'TH0': undefined identifier
+1231   3          }
+1232   2          else 
+1233   2          {
+1234   3            TL0=0x88;TH0=0xFF;//120us
+*** ERROR C202 IN LINE 1234 OF main.c: 'TL0': undefined identifier
+*** ERROR C202 IN LINE 1234 OF main.c: 'TH0': undefined identifier
+1235   3          }
+1236   2      
+1237   2          
+1238   2        }
+1239   1        else 
+1240   1        {
+1241   2          t_output++;
+1242   2          switch(t_output)
+1243   2          {
+1244   3            
+1245   3            case 1:if(CH1_PWM)//输出PWM
+1246   3                    {
+1247   4                      if(CH_data[0]<100)
+1248   4                      {
+1249   5                        PCA_PWM2=0x03;  
+*** ERROR C202 IN LINE 1249 OF main.c: 'PCA_PWM2': undefined identifier
+1250   5                      }
+1251   4                      else
+1252   4                      {
+1253   5                        PCA_PWM2=0x00;
+*** ERROR C202 IN LINE 1253 OF main.c: 'PCA_PWM2': undefined identifier
+1254   5                      }
+1255   4                      CCAP2H=255-CH_data[0]/4;
+*** ERROR C202 IN LINE 1255 OF main.c: 'CCAP2H': undefined identifier
+1256   4                    }
+1257   3                    else
+1258   3                    {
+1259   4                      if(CH1_SW)//输出电平信号
+1260   4                      {
+1261   5                        if(CH_data[0]<500)CH1=0;
+*** ERROR C202 IN LINE 1261 OF main.c: 'CH1': undefined identifier
+1262   5                        else CH1=1;
+*** ERROR C202 IN LINE 1262 OF main.c: 'CH1': undefined identifier
+1263   5                      }
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 25  
+
+1264   4                      else CH1=1; //输出舵量
+*** ERROR C202 IN LINE 1264 OF main.c: 'CH1': undefined identifier
+1265   4                    }
+1266   3                        
+1267   3                    temp2=128600-temp1;
+1268   3                    TL0=temp2,TH0=temp2>>8;break; 
+*** ERROR C202 IN LINE 1268 OF main.c: 'TL0': undefined identifier
+1269   3                    
+1270   3            case 2:if(CH1_PWM==0)
+1271   3                    {
+1272   4                      if(CH1_SW==0)CH1=0;
+*** ERROR C202 IN LINE 1272 OF main.c: 'CH1': undefined identifier
+1273   4                    }
+1274   3                    
+1275   3                    temp1=64725-CH_data[1]*27/20;
+1276   3                    TL0=temp1,TH0=temp1>>8;break;       
+*** ERROR C202 IN LINE 1276 OF main.c: 'TL0': undefined identifier
+1277   3                    
+1278   3                    
+1279   3            case 3:if(CH2_PWM)
+1280   3                    {
+1281   4                      if(CH_data[1]<100)
+1282   4                      {
+1283   5                        PCA_PWM1=0x03;  
+*** ERROR C202 IN LINE 1283 OF main.c: 'PCA_PWM1': undefined identifier
+1284   5                      }
+1285   4                      else
+1286   4                      {
+1287   5                        PCA_PWM1=0x00;
+*** ERROR C202 IN LINE 1287 OF main.c: 'PCA_PWM1': undefined identifier
+1288   5                      }
+1289   4                      CCAP1H=255-CH_data[1]/4;
+*** ERROR C202 IN LINE 1289 OF main.c: 'CCAP1H': undefined identifier
+1290   4                    }
+1291   3                    else
+1292   3                    {
+1293   4                      if(CH2_SW)
+1294   4                      {
+1295   5                        if(CH_data[1]<500)CH2=0;
+*** ERROR C202 IN LINE 1295 OF main.c: 'CH2': undefined identifier
+1296   5                        else CH2=1;
+*** ERROR C202 IN LINE 1296 OF main.c: 'CH2': undefined identifier
+1297   5                      }
+1298   4                      else CH2=1;
+*** ERROR C202 IN LINE 1298 OF main.c: 'CH2': undefined identifier
+1299   4                    }
+1300   3                    
+1301   3                    temp2=128600-temp1;
+1302   3                    TL0=temp2,TH0=temp2>>8;break;
+*** ERROR C202 IN LINE 1302 OF main.c: 'TL0': undefined identifier
+1303   3                                  
+1304   3            case 4:if(CH2_PWM==0)
+1305   3                    {
+1306   4                      if(CH2_SW==0)CH2=0;
+*** ERROR C202 IN LINE 1306 OF main.c: 'CH2': undefined identifier
+1307   4                    }
+1308   3                    
+1309   3                    temp1=64725-CH_data[2]*27/20;
+1310   3                    TL0=temp1,TH0=temp1>>8;break;
+*** ERROR C202 IN LINE 1310 OF main.c: 'TL0': undefined identifier
+1311   3                    
+1312   3                    
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 26  
+
+1313   3                    
+1314   3            case 5:if(CH3_SW)
+1315   3                    {
+1316   4                      if(CH_data[2]<500)CH3=0;
+*** ERROR C202 IN LINE 1316 OF main.c: 'CH3': undefined identifier
+1317   4                      else CH3=1;
+*** ERROR C202 IN LINE 1317 OF main.c: 'CH3': undefined identifier
+1318   4                    }
+1319   3                    else CH3=1;
+*** ERROR C202 IN LINE 1319 OF main.c: 'CH3': undefined identifier
+1320   3                    
+1321   3                    temp2=128600-temp1;
+1322   3                    TL0=temp2,TH0=temp2>>8;break;
+*** ERROR C202 IN LINE 1322 OF main.c: 'TL0': undefined identifier
+1323   3                    
+1324   3            case 6:if(CH3_SW==0)CH3=0;
+*** ERROR C202 IN LINE 1324 OF main.c: 'CH3': undefined identifier
+1325   3                    
+1326   3                    temp1=64725-CH_data[3]*27/20;
+1327   3                    TL0=temp1,TH0=temp1>>8;break;
+*** ERROR C202 IN LINE 1327 OF main.c: 'TL0': undefined identifier
+1328   3                    
+1329   3                    
+1330   3            case 7:if(CH4_SW)
+1331   3                    {
+1332   4                      if(CH_data[3]<500)CH4=0;
+*** ERROR C202 IN LINE 1332 OF main.c: 'CH4': undefined identifier
+1333   4                      else CH4=1;
+*** ERROR C202 IN LINE 1333 OF main.c: 'CH4': undefined identifier
+1334   4                    }
+1335   3                    else CH4=1;
+*** ERROR C202 IN LINE 1335 OF main.c: 'CH4': undefined identifier
+1336   3                    
+1337   3                    temp2=128600-temp1;
+1338   3                    TL0=temp2,TH0=temp2>>8;break;
+*** ERROR C202 IN LINE 1338 OF main.c: 'TL0': undefined identifier
+1339   3                    
+1340   3            case 8:if(CH4_SW==0)CH4=0;
+*** ERROR C202 IN LINE 1340 OF main.c: 'CH4': undefined identifier
+1341   3                    
+1342   3                    temp1=64725-CH_data[4]*27/20;
+1343   3                    TL0=temp1,TH0=temp1>>8;break;
+*** ERROR C202 IN LINE 1343 OF main.c: 'TL0': undefined identifier
+1344   3                    
+1345   3                    
+1346   3            case 9:if(CH5_SW)
+1347   3                    {
+1348   4                      if(CH_data[4]<500)CH5=0;
+*** ERROR C202 IN LINE 1348 OF main.c: 'CH5': undefined identifier
+1349   4                      else CH5=1;
+*** ERROR C202 IN LINE 1349 OF main.c: 'CH5': undefined identifier
+1350   4                    }
+1351   3                    else CH5=1;
+*** ERROR C202 IN LINE 1351 OF main.c: 'CH5': undefined identifier
+1352   3                    
+1353   3                    temp2=128600-temp1;
+1354   3                    TL0=temp2,TH0=temp2>>8;break;
+*** ERROR C202 IN LINE 1354 OF main.c: 'TL0': undefined identifier
+1355   3                    
+1356   3            case 10:if(CH5_SW==0)CH5=0;
+*** ERROR C202 IN LINE 1356 OF main.c: 'CH5': undefined identifier
+1357   3                    
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 27  
+
+1358   3                    temp1=64725-CH_data[5]*27/20;
+1359   3                    TL0=temp1,TH0=temp1>>8;break;
+*** ERROR C202 IN LINE 1359 OF main.c: 'TL0': undefined identifier
+1360   3                    
+1361   3                    
+1362   3            case 11:if(CH6_SW)
+1363   3                    {
+1364   4                      if(CH_data[5]<500)CH6=0;
+*** ERROR C202 IN LINE 1364 OF main.c: 'CH6': undefined identifier
+1365   4                      else CH6=1;
+*** ERROR C202 IN LINE 1365 OF main.c: 'CH6': undefined identifier
+1366   4                    }
+1367   3                    else CH6=1;
+*** ERROR C202 IN LINE 1367 OF main.c: 'CH6': undefined identifier
+1368   3                    
+1369   3                    temp2=128600-temp1;
+1370   3                    TL0=temp2,TH0=temp2>>8;break;
+*** ERROR C202 IN LINE 1370 OF main.c: 'TL0': undefined identifier
+1371   3                    
+1372   3            case 12:if(CH6_SW==0)CH6=0;
+*** ERROR C202 IN LINE 1372 OF main.c: 'CH6': undefined identifier
+1373   3                    
+1374   3                    temp1=64725-CH_data[6]*27/20;
+1375   3                    TL0=temp1,TH0=temp1>>8;break;
+*** ERROR C202 IN LINE 1375 OF main.c: 'TL0': undefined identifier
+1376   3                                
+1377   3            case 13:if(CH7_SW)
+1378   3                    {
+1379   4                      if(CH_data[6]<500)CH7=0;
+*** ERROR C202 IN LINE 1379 OF main.c: 'CH7': undefined identifier
+1380   4                      else CH7=1;
+*** ERROR C202 IN LINE 1380 OF main.c: 'CH7': undefined identifier
+1381   4                    }
+1382   3                    else CH7=1;
+*** ERROR C202 IN LINE 1382 OF main.c: 'CH7': undefined identifier
+1383   3                    
+1384   3                    temp2=128600-temp1;
+1385   3                    TL0=temp2,TH0=temp2>>8;break;
+*** ERROR C202 IN LINE 1385 OF main.c: 'TL0': undefined identifier
+1386   3                    
+1387   3            case 14:if(CH7_SW==0)CH7=0;
+*** ERROR C202 IN LINE 1387 OF main.c: 'CH7': undefined identifier
+1388   3                    
+1389   3                    temp1=64725-CH_data[7]*27/20;
+1390   3                    TL0=temp1,TH0=temp1>>8;break;
+*** ERROR C202 IN LINE 1390 OF main.c: 'TL0': undefined identifier
+1391   3                    
+1392   3            case 15:if(CH8_SW)
+1393   3                    {
+1394   4                      if(CH_data[7]<500)CH8=0;
+*** ERROR C202 IN LINE 1394 OF main.c: 'CH8': undefined identifier
+1395   4                      else CH8=1;
+*** ERROR C202 IN LINE 1395 OF main.c: 'CH8': undefined identifier
+1396   4                    }
+1397   3                    else CH8=1;
+*** ERROR C202 IN LINE 1397 OF main.c: 'CH8': undefined identifier
+1398   3                    
+1399   3                    temp2=128600-temp1;
+1400   3                    TL0=temp2,TH0=temp2>>8;break;
+*** ERROR C202 IN LINE 1400 OF main.c: 'TL0': undefined identifier
+1401   3                    
+1402   3            case 16:if(CH8_SW==0)CH8=0;
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 12:03:25 PAGE 28  
+
+*** ERROR C202 IN LINE 1402 OF main.c: 'CH8': undefined identifier
+1403   3                    
+1404   3                    temp1=64725-CH_data[0]*27/20;
+1405   3                    TL0=temp1,TH0=temp1>>8;t_output=0;break;
+*** ERROR C202 IN LINE 1405 OF main.c: 'TL0': undefined identifier
+1406   3          } 
+1407   2        }
+1408   1      }
+1409          
+1410          void PCA_isr()interrupt 7
+1411          {
+1412   1        CL=0x48,CH=0xf4;    //3ms
+*** ERROR C202 IN LINE 1412 OF main.c: 'CL': undefined identifier
+1413   1        CCON=0x40;
+*** ERROR C202 IN LINE 1413 OF main.c: 'CCON': undefined identifier
+1414   1        
+1415   1        
+1416   1        Cycle();
+1417   1        
+1418   1      //CH4=!CH4;
+1419   1      }
+1420          
+1421          void et2()interrupt 12  //跳频定时器 3ms    
+1422          { 
+1423   1        
+1424   1        Cycle();
+1425   1      //CH2=!CH2;
+1426   1      //CH3=!CH3; 
+1427   1      } 
+1428            
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  267 ERROR(S)

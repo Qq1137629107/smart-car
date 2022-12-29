@@ -1,0 +1,9 @@
+".\Objects\STARTUP.obj",
+".\Objects\mian.obj",
+".\Objects\I2C.obj",
+".\Objects\SMG.obj",
+".\Objects\KEY.obj",
+".\Objects\AT24C02.obj",
+".\Objects\public.obj" 
+TO ".\Objects\I2C_test" 
+PRINT(".\Listings\I2C_test.m51")

@@ -1,0 +1,96 @@
+C51 COMPILER V9.60.0.0   OLED                                                              11/26/2022 09:22:55 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE OLED
+OBJECT MODULE PLACED IN .\Objects\oled.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE oled.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\ole
+                    -d.lst) TABS(2) OBJECT(.\Objects\oled.obj)
+
+line level    source
+
+   1          #include "commom.h"
+   2          #include "font.h"
+   3          
+   4          u8 cmd_data[27] = {0xae, 0x00, 0x10, 0x40, 0xb0, 0x81, 0xff, 0xa1, 0xa6,
+   5                             0xa8, 0x3f, 0xc8, 0xd3, 0x00, 0xd5, 0x80, 0xd8, 0x05,
+   6                             0xd9, 0xf1, 0xda, 0x12, 0xd8, 0x30, 0x8d, 0x14, 0xaf};
+   7          
+   8          void OLED_WR_Byte(u16 dat, u16 cmd)
+   9          {
+  10   1          if (cmd) {
+  11   2              Write_IIC_Data(dat);
+  12   2          } else {
+  13   2              Write_IIC_CMD(dat);
+  14   2          }
+  15   1      }
+  16          
+  17          void OLED_Set_Pos(u8 x, u8 y)
+  18          {
+  19   1          OLED_WR_Byte(0xb0 + y, SEND_CMD);
+  20   1          OLED_WR_Byte(((x & 0xf0) >> 4) | 0x10, SEND_CMD);
+  21   1          OLED_WR_Byte((x & 0x0f), SEND_CMD);
+  22   1      }
+  23          
+  24          void OLED_Clear(void)
+  25          {
+  26   1          u8 i, n;
+  27   1          for (i = 0; i < 8; i++) {
+  28   2              OLED_WR_Byte(0xb0 + i, SEND_CMD);
+  29   2              OLED_WR_Byte(0x00, SEND_CMD);
+  30   2              OLED_WR_Byte(0x10, SEND_CMD);
+  31   2              for (n = 0; n < 128; n++) OLED_WR_Byte(0, SEND_DATA);
+  32   2          }
+  33   1      }
+  34          
+  35          void OLED_ShowChar(u8 x, u8 y, u8 chr)
+  36          {
+  37   1          u8 c = 0, i = 0;
+  38   1          c = chr - ' ';
+  39   1          if (x > Max_Column - 1) {
+  40   2              x = 0;
+  41   2              y = y + 2;
+  42   2          }
+  43   1      
+  44   1          OLED_Set_Pos(x, y);
+  45   1          for (i = 0; i < 6; i++)
+  46   1              OLED_WR_Byte(F6x8[c][i], SEND_DATA);
+  47   1      }
+  48          
+  49          void OLED_ShowString(u8 x, u8 y, u8 *chr)
+  50          {
+  51   1          u8 j = 0;
+  52   1          while (chr[j] != '\0') {
+  53   2              OLED_ShowChar(x, y, chr[j]);
+  54   2              x += 8;
+C51 COMPILER V9.60.0.0   OLED                                                              11/26/2022 09:22:55 PAGE 2   
+
+  55   2              if (x > 120) {
+  56   3                  x = 0;
+  57   3                  y += 2;
+  58   3              }
+  59   2              j++;
+  60   2          }
+  61   1      }
+  62          
+  63          void OLED_Init(void)
+  64          {
+  65   1          u8 i = 0;
+  66   1          while (i < 27) {
+  67   2              OLED_WR_Byte(cmd_data[i], SEND_CMD);
+  68   2              i++;
+  69   2          }
+  70   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    322    ----
+   CONSTANT SIZE    =    552    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     27      14
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

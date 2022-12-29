@@ -1,0 +1,154 @@
+C51 COMPILER V9.60.0.0   MAIN                                                              11/12/2022 00:39:31 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\mai
+                    -n.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "oled.h"
+   2          #include "bmp.h"
+   3          
+   4          
+   5          #define uchar unsigned char
+   6          
+   7          sbit keydown = P3 ^ 0;
+   8          
+   9          sbit keyenter = P3 ^ 2;
+  10          
+  11          sbit keyup = P3 ^ 1;
+  12          
+  13          uchar func_index = 0;
+  14          
+  15          void (*current_operation_index)();
+  16          
+  17          typedef struct
+  18          
+  19          {
+  20          
+  21              uchar current;
+  22          
+  23              uchar up;//向上翻索引号
+  24          
+  25              uchar down;//向下翻索引号
+  26          
+  27              uchar enter;//确认索引号
+  28          
+  29              void (*current_operation)();
+  30          
+  31          } key_table;
+  32          
+  33          void fun1()
+  34          {
+  35   1      
+  36   1      
+  37   1          OLED_ShowString(0, 0, " ALL BREATH", 12);
+  38   1          OLED_ShowString(0, 2, ">NIXIE TUBE", 12);
+  39   1          OLED_ShowString(0, 4, " LEDS", 12);
+  40   1          OLED_ShowString(0, 6, " MUSIC", 12);
+  41   1      }
+  42          void fun2()
+  43          {
+  44   1      
+  45   1      
+  46   1          OLED_ShowString(0, 0, " ALL BREATH", 12);
+  47   1          OLED_ShowString(0, 2, " NIXIE TUBE", 12);
+  48   1          OLED_ShowString(0, 4, ">LEDS", 12);
+  49   1          OLED_ShowString(0, 6, " MUSIC", 12);
+  50   1      }
+  51          
+  52          key_table code table[30] =
+  53          
+  54          {
+C51 COMPILER V9.60.0.0   MAIN                                                              11/12/2022 00:39:31 PAGE 2   
+
+  55          
+  56                  {0,3,1,4,(*fun1)},//第一层，显示【清华大学】、北京大学、重庆三峡学院、返回
+  57          
+  58                   {1,0,2,8,(*fun2)},//第一层，显示清华大学、【北京大学】、重庆三峡学院、返回
+  59          
+  60          
+  61          
+  62          };
+  63          
+  64          
+  65          void main()
+  66          
+  67          {
+  68   1      
+  69   1          OLED_Init();
+  70   1          OLED_Clear(); //初始化LCD模块  
+  71   1      OLED_ShowString(0, 0, " ALL BREATH", 12);
+  72   1          OLED_ShowString(0, 2, " NIXIE TUBE", 12);
+  73   1          OLED_ShowString(0, 4, " LEDS", 12);
+  74   1          OLED_ShowString(0, 6, " MUSIC", 12);
+  75   1          while (1)
+  76   1      
+  77   1          {
+  78   2      
+  79   2              /*******************find index****************************/
+  80   2      
+  81   2              if ((keyup == 0) || (keydown == 0) || (keyenter == 0))
+  82   2      
+  83   2              {
+  84   3      
+  85   3                  delay_ms(10);//消抖
+  86   3      
+  87   3                  if (keyup == 0)
+  88   3      
+  89   3                  {
+  90   4      
+  91   4                      func_index = table[func_index].up;    //向上翻
+  92   4      
+  93   4                      while (!keyup);//松手检测
+  94   4       (*current_operation_index)();
+  95   4                  }
+  96   3      
+  97   3                  if (keydown == 0)
+  98   3      
+  99   3                  {
+ 100   4      
+ 101   4                      func_index = table[func_index].down;    //向下翻
+ 102   4      
+ 103   4                      while (!keydown);
+ 104   4       (*current_operation_index)();
+ 105   4                  }
+ 106   3      
+ 107   3                  if (keyenter == 0)
+ 108   3      
+ 109   3                  {
+ 110   4      
+ 111   4                      func_index = table[func_index].enter;    //确认
+ 112   4      
+ 113   4                      while (!keyenter);
+ 114   4       (*current_operation_index)();
+ 115   4                  }
+ 116   3      
+C51 COMPILER V9.60.0.0   MAIN                                                              11/12/2022 00:39:31 PAGE 3   
+
+ 117   3      
+ 118   3              }
+ 119   2      
+ 120   2              current_operation_index = table[func_index].current_operation;
+ 121   2      
+ 122   2             //执行当前操作函数
+ 123   2      
+ 124   2          }
+ 125   1      
+ 126   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    341    ----
+   CONSTANT SIZE    =   1289    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

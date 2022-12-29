@@ -1,0 +1,372 @@
+C51 COMPILER V9.60.0.0   MENU                                                              11/20/2022 19:44:07 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MENU
+OBJECT MODULE PLACED IN .\Objects\menu.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE menu.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\men
+                    -u.lst) TABS(2) OBJECT(.\Objects\menu.obj)
+
+line level    source
+
+   1          #include "menu.h"
+   2          #include "oled.h"
+   3          #include "beepled.h"
+   4          #include "smg.h"
+   5          u8 func_index = 0;
+   6          u8 s0;
+   7          u8 s1;
+   8          u8 s2;
+   9          u8 s3=150;
+  10          u8 k4;
+  11          u8 s4=5;
+  12          void (*current_operation_index)();
+  13          
+  14          typedef struct
+  15          {
+  16              u8 current;
+  17              u8 up;
+  18              u8 down;
+  19              u8 enter;
+  20              void (*current_operation)();
+  21          } key_table;
+  22          
+  23          void fun_0()
+  24          {
+  25   1        OLED_Clear();
+  26   1        OLED_ShowString(0, 0, ">PRASS");
+  27   1        OLED_ShowString(0, 2, ">MENU");
+  28   1        OLED_ShowString(0, 4, ">TO");
+  29   1        OLED_ShowString(0, 6, ">CONTINUE");
+  30   1      }
+  31          void fun_a1()
+  32          {
+  33   1        OLED_Clear();
+  34   1        OLED_ShowString(0, 0, ">ALL BREATH");
+  35   1        OLED_ShowString(0, 2, " NIXIE TUBE");
+  36   1        OLED_ShowString(0, 4, " LEDS");
+  37   1        OLED_ShowString(0, 6, " MUSIC");
+  38   1      }void fun_b1()
+  39          {
+  40   1        OLED_Clear();
+  41   1        OLED_ShowString(0, 0, " ALL BREATH");
+  42   1        OLED_ShowString(0, 2, ">NIXIE TUBE");
+  43   1        OLED_ShowString(0, 4, " LEDS");
+  44   1        OLED_ShowString(0, 6, " MUSIC");
+  45   1      }
+  46          void fun_c1()
+  47          {
+  48   1        OLED_Clear();
+  49   1        OLED_ShowString(0, 0, " ALL BREATH");
+  50   1        OLED_ShowString(0, 2, " NIXIE TUBE");
+  51   1        OLED_ShowString(0, 4, ">LEDS");
+  52   1        OLED_ShowString(0, 6, " MUSIC");
+  53   1      }
+  54          void fun_d1()
+C51 COMPILER V9.60.0.0   MENU                                                              11/20/2022 19:44:07 PAGE 2   
+
+  55          {
+  56   1        OLED_Clear();
+  57   1        OLED_ShowString(0, 0, " ALL BREATH");
+  58   1        OLED_ShowString(0, 2, " NIXIE TUBE");
+  59   1        OLED_ShowString(0, 4, " LEDS");
+  60   1        OLED_ShowString(0, 6, ">MUSIC");
+  61   1      }
+  62          void fun_a21()
+  63          {
+  64   1        OLED_Clear();
+  65   1        OLED_ShowString(0, 0, ">ON");
+  66   1        OLED_ShowString(0, 2, " OFF");
+  67   1        OLED_ShowString(0, 4, " RETURN");
+  68   1      
+  69   1      }
+  70          void fun_a22()
+  71          {
+  72   1        OLED_Clear();
+  73   1        OLED_ShowString(0, 0, " ON");
+  74   1        OLED_ShowString(0, 2, ">OFF");
+  75   1        OLED_ShowString(0, 4, " RETURN");
+  76   1      }
+  77          void fun_a23()
+  78          {
+  79   1        OLED_Clear();
+  80   1        OLED_ShowString(0, 0, " ON");
+  81   1        OLED_ShowString(0, 2, " OFF");
+  82   1        OLED_ShowString(0, 4, ">RETURN");
+  83   1      }
+  84          void fun_b21()
+  85          {
+  86   1        OLED_Clear();
+  87   1        OLED_ShowString(0, 0, ">TIMER");
+  88   1        OLED_ShowString(0, 2, " COUNTDOWN");
+  89   1        OLED_ShowString(0, 4, " RETURN");
+  90   1      
+  91   1      }
+  92          void fun_b22()
+  93          {
+  94   1        OLED_Clear();
+  95   1        OLED_ShowString(0, 0, " TIMER");
+  96   1        OLED_ShowString(0, 2, ">COUNTDOWN");
+  97   1        OLED_ShowString(0, 4, " RETURN");
+  98   1        s1=0;
+  99   1      }
+ 100          void fun_b23()
+ 101          {
+ 102   1        OLED_Clear();
+ 103   1        OLED_ShowString(0, 0, " TIMER");
+ 104   1        OLED_ShowString(0, 2, " COUNTDOWN");
+ 105   1        OLED_ShowString(0, 4, ">RETURN");
+ 106   1      }
+ 107          void fun_c21()
+ 108          {
+ 109   1        OLED_Clear();
+ 110   1        OLED_ShowString(0, 0, ">NEON LAMP");
+ 111   1        OLED_ShowString(0, 2, " OFF");
+ 112   1        OLED_ShowString(0, 4, " CHANGE SPEED");
+ 113   1        OLED_ShowString(0, 6, " RETURN");
+ 114   1      }
+ 115          void fun_c22()
+ 116          {
+C51 COMPILER V9.60.0.0   MENU                                                              11/20/2022 19:44:07 PAGE 3   
+
+ 117   1        OLED_Clear();
+ 118   1        OLED_ShowString(0, 0, " NEON LAMP");
+ 119   1        OLED_ShowString(0, 2, ">OFF");
+ 120   1        OLED_ShowString(0, 4, " CHANGE SPEED");
+ 121   1        OLED_ShowString(0, 6, " RETURN");
+ 122   1      } 
+ 123          void fun_c23()
+ 124          {
+ 125   1        OLED_Clear();
+ 126   1        OLED_ShowString(0, 0, " NEON LAMP");
+ 127   1        OLED_ShowString(0, 2, " OFF");
+ 128   1        OLED_ShowString(0, 4, ">CHANGE SPEED");
+ 129   1        OLED_ShowString(0, 6, " RETURN");
+ 130   1      } 
+ 131          void fun_c24()
+ 132          {
+ 133   1        OLED_Clear();
+ 134   1        OLED_ShowString(0, 0, " NEON LAMP");
+ 135   1        OLED_ShowString(0, 2, " OFF");
+ 136   1        OLED_ShowString(0, 4, " CHANGE SPEED");
+ 137   1        OLED_ShowString(0, 6, ">RETURN");
+ 138   1      } 
+ 139          void fun_d21()
+ 140          {
+ 141   1        OLED_Clear();
+ 142   1        OLED_ShowString(0, 0, ">MUSIC");
+ 143   1        OLED_ShowString(0, 2, " VOL+");
+ 144   1        OLED_ShowString(0, 4, " VOL-");
+ 145   1        OLED_ShowString(0, 6, " RETURN");
+ 146   1      }
+ 147          void fun_d22()
+ 148          {
+ 149   1        OLED_Clear();
+ 150   1        OLED_ShowString(0, 0, " MUSIC");
+ 151   1        OLED_ShowString(0, 2, ">VOL+");
+ 152   1        OLED_ShowString(0, 4, " VOL-");
+ 153   1        OLED_ShowString(0, 6, " RETURN");
+ 154   1      } 
+ 155          void fun_d23()
+ 156          {
+ 157   1        OLED_Clear();
+ 158   1        OLED_ShowString(0, 0, " MUSIC");
+ 159   1        OLED_ShowString(0, 2, " VOL+");
+ 160   1        OLED_ShowString(0, 4, ">VOL-");
+ 161   1        OLED_ShowString(0, 6, " RETURN");
+ 162   1      } 
+ 163          void fun_d24()
+ 164          {
+ 165   1        OLED_Clear();
+ 166   1        OLED_ShowString(0, 0, " MUSIC");
+ 167   1        OLED_ShowString(0, 2, " VOL+");
+ 168   1        OLED_ShowString(0, 4, " VOL-");
+ 169   1        OLED_ShowString(0, 6, ">RETURN");
+ 170   1      }
+ 171          void fun_a31()
+ 172          {
+ 173   1        s0=1;
+ 174   1        k4=0;
+ 175   1      }
+ 176          void fun_a32()
+ 177          {
+ 178   1        s0=0;Hc595_Send_Dat2(0xff);
+C51 COMPILER V9.60.0.0   MENU                                                              11/20/2022 19:44:07 PAGE 4   
+
+ 179   1        Hc595_Send_Dat1(0xff);
+ 180   1      }
+ 181          void fun_b31()
+ 182          {
+ 183   1        OLED_Clear();
+ 184   1        OLED_ShowString(0,3,"     S+P=EXIT");
+ 185   1        OLED_ShowString(0,6," M      S      P");
+ 186   1        s1=1;
+ 187   1        jishiqi();
+ 188   1      }
+ 189          void fun_b32()
+ 190          {
+ 191   1        s1=0;
+ 192   1        Hc595_Send_Dat1(0xff);
+ 193   1      }
+ 194          void fun_c311()
+ 195          {
+ 196   1        s2=1;
+ 197   1        s0=0;
+ 198   1      }
+ 199          void fun_c321()
+ 200          {
+ 201   1        s2=0;Hc595_Send_Dat1(0xff);
+ 202   1      }
+ 203          void fun_c331()
+ 204          {
+ 205   1        OLED_Clear();
+ 206   1        OLED_ShowString(0,0,">SPEED+");
+ 207   1        OLED_ShowString(0,2," SPEED-");
+ 208   1        OLED_ShowString(0,4," RETURN");
+ 209   1      }
+ 210          void fun_c332()
+ 211          {
+ 212   1        OLED_Clear();
+ 213   1        OLED_ShowString(0,0," SPEED+");
+ 214   1        OLED_ShowString(0,2,">SPEED-");
+ 215   1        OLED_ShowString(0,4," RETURN");
+ 216   1      }
+ 217          void fun_c333()
+ 218          {
+ 219   1        OLED_Clear();
+ 220   1        OLED_ShowString(0,0," SPEED+");
+ 221   1        OLED_ShowString(0,2," SPEED-");
+ 222   1        OLED_ShowString(0,4,">RETURN");
+ 223   1      }
+ 224          void fun_c3111()
+ 225          {
+ 226   1        while(!SW3);
+ 227   1          s3=s3-10;
+ 228   1          if(s3==50)s3=50;
+ 229   1      }
+ 230          void fun_c3211()
+ 231          {
+ 232   1        while(!SW3);
+ 233   1          s3=s3+10;
+ 234   1        if(s3==500)s3=500;
+ 235   1      }
+ 236          
+ 237          void fun_d3211()
+ 238          {
+ 239   1        s0=0;
+ 240   1        while(!SW3);
+C51 COMPILER V9.60.0.0   MENU                                                              11/20/2022 19:44:07 PAGE 5   
+
+ 241   1        k4=!k4;
+ 242   1      }
+ 243          void fun_d3221()
+ 244          {
+ 245   1        while(!SW3);
+ 246   1        s4++;
+ 247   1        if(s4==20)s4=20;
+ 248   1      }
+ 249          void fun_d3331()
+ 250          {
+ 251   1        while(!SW3);
+ 252   1        s4--;
+ 253   1        if(s4==0)s4=0;
+ 254   1      }
+ 255            
+ 256          key_table code table[] =
+ 257          {      
+ 258          {0,0,0,1,(*fun_0)},//0
+ 259          
+ 260          {1,4,2,5,(*fun_a1)},
+ 261          {2,1,3,8,(*fun_b1)},        
+ 262          {3,2,4,11,(*fun_c1)},
+ 263          {4,3,1,15,(*fun_d1)},//1------------------------------------
+ 264          
+ 265          {5,7,6,19,(*fun_a21)}, 
+ 266          {6,5,7,20,(*fun_a22)},        
+ 267          {7,6,5,1,(*fun_a23)},//a2----------------------------------
+ 268          
+ 269          {8,10,9,21,(*fun_b21)},
+ 270          {9,8,10,22,(*fun_b22)},        
+ 271          {10,9,8,2,(*fun_b23)},//b2------------------------------------
+ 272          
+ 273          {11,14,12,23,(*fun_c21)},
+ 274          {12,11,13,24,(*fun_c22)},        
+ 275          {13,12,14,25,(*fun_c23)},
+ 276          {14,13,11,3,(*fun_c24)},//c2
+ 277          
+ 278          {15,18,16,28,(*fun_d21)},
+ 279          {16,15,17,29,(*fun_d22)},        
+ 280          {17,16,18,30,(*fun_d23)},
+ 281          {18,17,15,4,(*fun_d24)},//d2
+ 282          
+ 283          {19,7,6,19,(*fun_a31)},
+ 284          {20,5,7,20,(*fun_a32)},//a3-----------------------------------------
+ 285          
+ 286          {21,10,9,21,(*fun_b31)},
+ 287          {22,8,10,22,(*fun_b32)},//b3-------------------------------------
+ 288          
+ 289          {23,14,12,23,(*fun_c311)},
+ 290          {24,11,13,24,(*fun_c321)},
+ 291          
+ 292          {25,27,26,31,(*fun_c331)},
+ 293          {26,25,27,32,(*fun_c332)},
+ 294          {27,26,25,13,(*fun_c333)},
+ 295          
+ 296          {28,18,16,28,(*fun_d3211)},
+ 297          {29,15,17,29,(*fun_d3221)},
+ 298          {30,16,18,30,(*fun_d3331)},
+ 299          
+ 300          {31,27,26,31,(*fun_c3111)},
+ 301          {32,25,27,32,(*fun_c3211)},
+ 302          
+C51 COMPILER V9.60.0.0   MENU                                                              11/20/2022 19:44:07 PAGE 6   
+
+ 303          };
+ 304          
+ 305          void key_scan()
+ 306          {
+ 307   1        if ((SW1 == 0) || (SW2 == 0) || (SW3 == 0))   
+ 308   1      
+ 309   1        {
+ 310   2          Delay10ms();
+ 311   2          if (SW1 == 0)
+ 312   2          {
+ 313   3            func_index = table[func_index].up;   
+ 314   3            table[func_index].current_operation();      //向上翻
+ 315   3            while (!SW1);
+ 316   3            
+ 317   3            (*current_operation_index)();
+ 318   3          }
+ 319   2          if (SW2 == 0)
+ 320   2          {
+ 321   3            func_index = table[func_index].down; 
+ 322   3            current_operation_index = table[func_index].current_operation;      //向下翻
+ 323   3            while (!SW2);
+ 324   3            
+ 325   3            (*current_operation_index)();
+ 326   3          }
+ 327   2          if (SW3 == 0)
+ 328   2          {
+ 329   3            func_index = table[func_index].enter;   
+ 330   3            current_operation_index = table[func_index].current_operation;      //确认
+ 331   3            while (!SW3);
+ 332   3            
+ 333   3            (*current_operation_index)();
+ 334   3          }
+ 335   2          
+ 336   2        }
+ 337   1        
+ 338   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1433    ----
+   CONSTANT SIZE    =    539    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     10    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

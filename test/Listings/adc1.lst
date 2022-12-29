@@ -1,0 +1,50 @@
+C51 COMPILER V9.60.0.0   ADC1                                                              11/26/2022 09:22:55 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE ADC1
+OBJECT MODULE PLACED IN .\Objects\adc1.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE adc1.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\adc
+                    -1.lst) TABS(2) OBJECT(.\Objects\adc1.obj)
+
+line level    source
+
+   1          #include "commom.h"
+   2          
+   3          void Delay100us()   //@11.0592MHz
+   4          {
+   5   1        unsigned char i;
+   6   1      
+   7   1        i = 43;
+   8   1        while (--i);
+   9   1      }
+  10          
+  11          void init_adc()
+  12          {
+  13   1          P1=P1M0=P1M1=0x70;
+  14   1          ADC_RES=0;
+  15   1          ADC_CONTR=ADC_POWER|ADC_SPEEDLL;
+  16   1        Delay100us();
+  17   1      }
+  18          
+  19          u8 read_adc1_value(u8 ch)
+  20          {
+  21   1          ADC_CONTR=ADC_POWER|ADC_SPEEDLL|ch|ADC_START;
+  22   1        Delay100us();
+  23   1          while (!(ADC_CONTR&ADC_FLAG));
+  24   1          ADC_CONTR&=~ADC_FLAG;
+  25   1          return ADC_RES;
+  26   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     42    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

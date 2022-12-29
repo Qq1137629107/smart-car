@@ -1,0 +1,40 @@
+C51 COMPILER V9.60.0.0   ADC                                                               12/29/2022 11:17:01 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE ADC
+OBJECT MODULE PLACED IN .\Objects\adc.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE adc.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\adc.
+                    -lst) TABS(2) OBJECT(.\Objects\adc.obj)
+
+line level    source
+
+   1          #include "public.h"
+   2          
+   3          void init_adc()
+   4          {
+   5   1          P1 = P1M0 = P1M1 = 0x70;
+   6   1          ADC_RES          = 0;
+   7   1          ADC_CONTR        = ADC_POWER | ADC_SPEEDLL;
+   8   1      }
+   9          
+  10          u8 read_adc_value(u8 ch)
+  11          {
+  12   1          ADC_CONTR = ADC_POWER | ADC_SPEEDLL | ch | ADC_START;
+  13   1          while (!(ADC_CONTR & ADC_FLAG)) ;
+  14   1          ADC_CONTR &= ~ADC_FLAG;
+  15   1          return ADC_RES;
+  16   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     32    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

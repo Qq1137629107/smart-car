@@ -1,0 +1,5 @@
+".\Objects\main.obj",
+".\Objects\nrf24l01.obj",
+".\Objects\oled.obj" 
+TO ".\Objects\receiver" 
+PRINT(".\Listings\receiver.m51") RAMSIZE(256) 

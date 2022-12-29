@@ -1,0 +1,72 @@
+C51 COMPILER V9.60.0.0   ADC                                                               11/26/2022 09:22:55 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE ADC
+OBJECT MODULE PLACED IN .\Objects\adc.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE adc.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\adc.
+                    -lst) TABS(2) OBJECT(.\Objects\adc.obj)
+
+line level    source
+
+   1          #include "commom.h"
+   2          
+   3          void spi_write_byte(u8 byte)
+   4          {
+   5   1          u8 i;
+   6   1      
+   7   1          CLK=0;
+   8   1          for(i=0;i<8;i++)
+   9   1          {
+  10   2              DIN=byte>>7;
+  11   2              byte<<=1;
+  12   2              CLK=1;
+  13   2              CLK=0;
+  14   2          }
+  15   1      
+  16   1      }
+  17          
+  18          u16 spi_read_xpt2046_data()
+  19          {
+  20   1          u8 i;
+  21   1          u16 dat;
+  22   1          CLK=0;
+  23   1          for(i=0;i<12;i++)
+  24   1          {
+  25   2              dat<<=1;
+  26   2              CLK=1;
+  27   2              CLK=0;
+  28   2              dat|=DOUT;
+  29   2          }
+  30   1          return dat;
+  31   1      }
+  32          
+  33          u16 read_xpt2046_adc_value(u8 cmd)
+  34          {
+  35   1          u16 adc_value;
+  36   1          u8 i=0;
+  37   1          CS=0;
+  38   1          CLK=0;
+  39   1          spi_write_byte(cmd);
+  40   1          CLK=0;
+  41   1          CLK=1;
+  42   1          adc_value=spi_read_xpt2046_data();
+  43   1          CS=1;
+  44   1          return adc_value;
+  45   1      
+  46   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     96    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+C51 COMPILER V9.60.0.0   ADC                                                               11/26/2022 09:22:55 PAGE 2   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,42 @@
+C51 COMPILER V9.60.0.0   ADC_DRIVER                                                        11/26/2022 22:22:10 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE ADC_DRIVER
+OBJECT MODULE PLACED IN .\Objects\adc_driver.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE adc_driver.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listin
+                    -gs\adc_driver.lst) TABS(2) OBJECT(.\Objects\adc_driver.obj)
+
+line level    source
+
+   1          #include "commom.h"
+   2          
+   3          void init_adc()
+   4          {
+   5   1          P1=P1M0=P1M1=0x70;
+   6   1          ADC_RES=0;
+   7   1          ADC_CONTR=ADC_POWER|ADC_SPEEDLL;
+   8   1          
+   9   1      }
+  10          
+  11          u8 read_adc1_value(u8 ch)
+  12          {
+  13   1          ADC_CONTR=ADC_POWER|ADC_SPEEDLL|ch|ADC_START;
+  14   1          
+  15   1          while (!(ADC_CONTR&ADC_FLAG));
+  16   1          ADC_CONTR&=~ADC_FLAG;
+  17   1          return ADC_RES;
+  18   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     32    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

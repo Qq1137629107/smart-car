@@ -1,0 +1,6 @@
+".\Objects\main.obj",
+".\Objects\adc_driver.obj",
+".\Objects\oled.obj",
+".\Objects\iic.obj" 
+TO ".\Objects\adc_test2" 
+PRINT(".\Listings\adc_test2.m51") RAMSIZE(256) 

@@ -1,0 +1,3 @@
+".\Objects\main.obj" 
+TO ".\Objects\reciver_test" 
+PRINT(".\Listings\reciver_test.m51") RAMSIZE(256) 

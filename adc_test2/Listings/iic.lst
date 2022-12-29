@@ -1,0 +1,91 @@
+C51 COMPILER V9.60.0.0   IIC                                                               11/26/2022 22:22:10 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE IIC
+OBJECT MODULE PLACED IN .\Objects\iic.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE iic.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\iic.
+                    -lst) TABS(2) OBJECT(.\Objects\iic.obj)
+
+line level    source
+
+   1          #include "commom.h"
+   2          
+   3          void IIC_Start()
+   4          {
+   5   1          SCL = 1;
+   6   1          SDA = 1;
+   7   1          SDA = 0;
+   8   1          SCL = 0;
+   9   1      }
+  10          
+  11          void IIC_Stop()
+  12          {
+  13   1          SCL = 1;
+  14   1          SDA = 0;
+  15   1          SDA = 1;
+  16   1      }
+  17          
+  18          void IIC_Wait_Ack()
+  19          {
+  20   1          SCL = 1;
+  21   1          SCL = 0;
+  22   1      }
+  23          
+  24          void Write_IIC_Byte(u8 IIC_Byte)
+  25          {
+  26   1          u8 i;
+  27   1          u8 m, da;
+  28   1          da  = IIC_Byte;
+  29   1          SCL = 0;
+  30   1          for (i = 0; i < 8; i++) {
+  31   2              m = da;
+  32   2              m = m & 0x80;
+  33   2              if (m == 0x80) {
+  34   3                  SDA = 1;
+  35   3              } else
+  36   2                  SDA = 0;
+  37   2              da  = da << 1;
+  38   2              SCL = 1;
+  39   2              SCL = 0;
+  40   2          }
+  41   1      }
+  42          
+  43          void Write_IIC_CMD(u8 IIC_CMD)
+  44          {
+  45   1          IIC_Start();
+  46   1          Write_IIC_Byte(0x78);
+  47   1          IIC_Wait_Ack();
+  48   1          Write_IIC_Byte(0x00);
+  49   1          IIC_Wait_Ack();
+  50   1          Write_IIC_Byte(IIC_CMD);
+  51   1          IIC_Wait_Ack();
+  52   1          IIC_Stop();
+  53   1      }
+  54          
+C51 COMPILER V9.60.0.0   IIC                                                               11/26/2022 22:22:10 PAGE 2   
+
+  55          void Write_IIC_Data(u8 IIC_Data)
+  56          {
+  57   1          IIC_Start();
+  58   1          Write_IIC_Byte(0x78);
+  59   1          IIC_Wait_Ack();
+  60   1          Write_IIC_Byte(0x40);
+  61   1          IIC_Wait_Ack();
+  62   1          Write_IIC_Byte(IIC_Data);
+  63   1          IIC_Wait_Ack();
+  64   1          IIC_Stop();
+  65   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    109    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

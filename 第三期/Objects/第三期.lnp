@@ -1,0 +1,9 @@
+".\Objects\main.obj",
+".\Objects\oled.obj",
+".\Objects\public.obj",
+".\Objects\menu.obj",
+".\Objects\iic.obj",
+".\Objects\smg.obj",
+".\Objects\beepled.obj" 
+TO ".\Objects\第三期" 
+PRINT(".\Listings\第三期.m51")

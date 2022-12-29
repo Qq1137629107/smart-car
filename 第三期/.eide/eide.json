@@ -1,0 +1,129 @@
+{
+  "name": "第三期",
+  "type": "C51",
+  "dependenceList": [],
+  "srcDirs": [],
+  "virtualFolder": {
+    "name": "<virtual_root>",
+    "files": [],
+    "folders": [
+      {
+        "name": "main",
+        "files": [
+          {
+            "path": "main.c"
+          }
+        ],
+        "folders": []
+      },
+      {
+        "name": "oled",
+        "files": [
+          {
+            "path": "oled.h"
+          },
+          {
+            "path": "oledfont.h"
+          },
+          {
+            "path": "cmd_data.h"
+          },
+          {
+            "path": "oled.c"
+          }
+        ],
+        "folders": []
+      },
+      {
+        "name": "public",
+        "files": [
+          {
+            "path": "public.c"
+          },
+          {
+            "path": "public.h"
+          }
+        ],
+        "folders": []
+      },
+      {
+        "name": "menu",
+        "files": [
+          {
+            "path": "menu.c"
+          },
+          {
+            "path": "menu.h"
+          }
+        ],
+        "folders": []
+      },
+      {
+        "name": "iic",
+        "files": [
+          {
+            "path": "iic.c"
+          },
+          {
+            "path": "iic.h"
+          }
+        ],
+        "folders": []
+      },
+      {
+        "name": "smg",
+        "files": [
+          {
+            "path": "smg.c"
+          },
+          {
+            "path": "smg.h"
+          }
+        ],
+        "folders": []
+      },
+      {
+        "name": "beepled",
+        "files": [
+          {
+            "path": "beepled.c"
+          },
+          {
+            "path": "beepled.h"
+          }
+        ],
+        "folders": []
+      }
+    ]
+  },
+  "outDir": "build",
+  "deviceName": null,
+  "packDir": null,
+  "miscInfo": {
+    "uid": "2f020a267f54159155324b54f8ceec49"
+  },
+  "targets": {
+    "Target 1": {
+      "excludeList": [],
+      "toolchain": "Keil_C51",
+      "compileConfig": {
+        "options": "null"
+      },
+      "uploader": "Custom",
+      "uploadConfig": {
+        "bin": "",
+        "commandLine": "",
+        "eraseChipCommand": ""
+      },
+      "uploadConfigMap": {},
+      "custom_dep": {
+        "name": "default",
+        "incList": [],
+        "libList": [],
+        "sourceDirList": [],
+        "defineList": []
+      }
+    }
+  },
+  "version": "3.3"
+}

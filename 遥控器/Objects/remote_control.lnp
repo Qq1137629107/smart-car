@@ -1,0 +1,10 @@
+".\Objects\main.obj",
+".\Objects\nrf24l01.obj",
+".\Objects\lcd12864.obj",
+".\Objects\adc.obj",
+".\Objects\eeprom.obj",
+".\Objects\initall.obj",
+".\Objects\menu.obj",
+".\Objects\key _scan.obj" 
+TO ".\Objects\remote_control" 
+PRINT(".\Listings\remote_control.m51") RAMSIZE(256) 

@@ -1,0 +1,280 @@
+C51 COMPILER V9.60.0.0   OLED                                                              11/12/2022 00:39:31 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE OLED
+OBJECT MODULE PLACED IN .\Objects\oled.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE oled.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\ole
+                    -d.lst) TABS(2) OBJECT(.\Objects\oled.obj)
+
+line level    source
+
+   1          #include "cmd_data.h"
+   2          #include "oled.h"
+   3          #include "oledfont.h"    
+   4          
+   5          //IIC_PART
+   6          
+   7          void IIC_Start()
+   8          {
+   9   1        SCL = 1; SDA = 1; SDA = 0; SCL = 0;
+  10   1      }
+  11          
+  12          void IIC_Stop()
+  13          {
+  14   1        SCL = 1; SDA = 0; SDA = 1;
+  15   1      }
+  16          
+  17          void IIC_Wait_Ack()
+  18          {
+  19   1        SCL = 1; SCL = 0;
+  20   1      }
+  21          
+  22          void Write_IIC_Byte(u8 IIC_Byte)
+  23          {
+  24   1        u8 i;
+  25   1        u8 m, da;
+  26   1        da = IIC_Byte;
+  27   1        SCL = 0;
+  28   1        for (i = 0; i < 8; i++)
+  29   1        {
+  30   2          m = da;
+  31   2          m = m & 0x80;
+  32   2          if (m == 0x80)
+  33   2          {
+  34   3            SDA = 1;
+  35   3          }
+  36   2          else SDA = 0;
+  37   2          da = da << 1;
+  38   2          SCL = 1; SCL = 0;
+  39   2        }
+  40   1      }
+  41          
+  42          void Write_IIC_CMD(u8 IIC_CMD)
+  43          {
+  44   1        IIC_Start();
+  45   1        Write_IIC_Byte(0x78);            //Slave address,SA0=0
+  46   1        IIC_Wait_Ack();
+  47   1        Write_IIC_Byte(0x00);     //write command
+  48   1        IIC_Wait_Ack();
+  49   1        Write_IIC_Byte(IIC_CMD);
+  50   1        IIC_Wait_Ack();
+  51   1        IIC_Stop();
+  52   1      }
+  53          
+  54          void Write_IIC_Data(u8 IIC_Data)
+C51 COMPILER V9.60.0.0   OLED                                                              11/12/2022 00:39:31 PAGE 2   
+
+  55          {
+  56   1        IIC_Start();
+  57   1        Write_IIC_Byte(0x78);     //D/C#=0; R/W#=0
+  58   1        IIC_Wait_Ack();
+  59   1        Write_IIC_Byte(0x40);     //write data
+  60   1        IIC_Wait_Ack();
+  61   1        Write_IIC_Byte(IIC_Data);
+  62   1        IIC_Wait_Ack();
+  63   1        IIC_Stop();
+  64   1      }
+  65          
+  66          //OLED_PART
+  67          
+  68          void OLED_WR_Byte(u16 dat, u16 cmd)
+  69          {
+  70   1        if (cmd)
+  71   1        {
+  72   2          Write_IIC_Data(dat);
+  73   2        }
+  74   1        else
+  75   1        {
+  76   2          Write_IIC_CMD(dat);
+  77   2        }
+  78   1      }
+  79          
+  80          void OLED_Set_Pos(u8 x, u8 y)
+  81          {
+  82   1        OLED_WR_Byte(0xb0 + y, SEND_CMD);
+  83   1        OLED_WR_Byte(((x & 0xf0) >> 4) | 0x10, SEND_CMD);
+  84   1        OLED_WR_Byte((x & 0x0f), SEND_CMD);
+  85   1      }
+  86          
+  87          void OLED_Display_On(void)
+  88          {
+  89   1        OLED_WR_Byte(0X8D, SEND_CMD);  //SET DCDC命令
+  90   1        OLED_WR_Byte(0X14, SEND_CMD);  //DCDC ON
+  91   1        OLED_WR_Byte(0XAF, SEND_CMD);  //DISPLAY ON
+  92   1      }
+  93          
+  94          void OLED_Display_Off(void)
+  95          {
+  96   1        OLED_WR_Byte(0X8D, SEND_CMD);  //SET DCDC命令
+  97   1        OLED_WR_Byte(0X10, SEND_CMD);  //DCDC OFF
+  98   1        OLED_WR_Byte(0XAE, SEND_CMD);  //DISPLAY OFF
+  99   1      }
+ 100          
+ 101          void OLED_Clear(void)
+ 102          {
+ 103   1        u8 i, n;
+ 104   1        for (i = 0; i < 8; i++)
+ 105   1        {
+ 106   2          OLED_WR_Byte(0xb0 + i, SEND_CMD);    //设置页地址（0~7）
+ 107   2          OLED_WR_Byte(0x00, SEND_CMD);      //设置显示位置—列低地址
+ 108   2          OLED_WR_Byte(0x10, SEND_CMD);      //设置显示位置—列高地址   
+ 109   2          for (n = 0; n < 128; n++)OLED_WR_Byte(0, SEND_DATA);
+ 110   2        }
+ 111   1      }
+ 112          void OLED_On(void)
+ 113          {
+ 114   1        u8 i, n;
+ 115   1        for (i = 0; i < 8; i++)
+ 116   1        {
+C51 COMPILER V9.60.0.0   OLED                                                              11/12/2022 00:39:31 PAGE 3   
+
+ 117   2          OLED_WR_Byte(0xb0 + i, SEND_CMD);    //设置页地址（0~7）
+ 118   2          OLED_WR_Byte(0x00, SEND_CMD);      //设置显示位置—列低地址
+ 119   2          OLED_WR_Byte(0x10, SEND_CMD);      //设置显示位置—列高地址   
+ 120   2          for (n = 0; n < 128; n++)OLED_WR_Byte(1, SEND_DATA);
+ 121   2        } //更新显示
+ 122   1      }
+ 123          //在指定位置显示一个字符,包括部分字符
+ 124          //x:0~127
+ 125          //y:0~63
+ 126          //mode:0,反白显示;1,正常显示         
+ 127          //size:选择字体 16/12 
+ 128          void OLED_ShowChar(u8 x, u8 y, u8 chr, u8 Char_Size)
+ 129          {
+ 130   1        
+ 131   1        u8 c = 0, i = 0;
+ 132   1        c = chr - ' ';//得到偏移后的值      
+ 133   1        if (x > Max_Column - 1)
+ 134   1        {
+ 135   2          x = 0; y = y + 2;
+ 136   2        }
+ 137   1      
+ 138   1        if (Char_Size == 16)
+ 139   1        {
+ 140   2          OLED_Set_Pos(x, y);
+ 141   2          for (i = 0; i < 8; i++)
+ 142   2            OLED_WR_Byte(F8X16[c * 16 + i], SEND_DATA);
+ 143   2          OLED_Set_Pos(x, y + 1);
+ 144   2          for (i = 0; i < 8; i++)
+ 145   2            OLED_WR_Byte(F8X16[c * 16 + i + 8], SEND_DATA);
+ 146   2        }
+ 147   1        else
+ 148   1        {
+ 149   2          OLED_Set_Pos(x, y);
+ 150   2          for (i = 0; i < 6; i++)
+ 151   2            OLED_WR_Byte(F6x8[c][i], SEND_DATA);
+ 152   2        }
+ 153   1      }
+ 154          //m^n函数
+ 155          u32 oled_pow(u8 m, u8 n)
+ 156          {
+ 157   1        u32 result = 1;
+ 158   1        while (n--)result *= m;
+ 159   1        return result;
+ 160   1      }
+ 161          //显示2个数字
+ 162          //x,y :起点坐标  
+ 163          //len :数字的位数
+ 164          //size:字体大小
+ 165          //mode:模式 0,填充模式;1,叠加模式
+ 166          //num:数值(0~4294967295);       
+ 167          void OLED_ShowNum(u8 x, u8 y, u32 num, u8 len, u8 size2)
+ 168          {
+ 169   1        u8 t, temp;
+ 170   1        u8 enshow = 0;
+ 171   1        for (t = 0; t < len; t++)
+ 172   1        {
+ 173   2          temp = (num / oled_pow(10, len - t - 1)) % 10;
+ 174   2          if (enshow == 0 && t < (len - 1))
+ 175   2          {
+ 176   3            if (temp == 0)
+ 177   3            {
+ 178   4              OLED_ShowChar(x + (size2 / 2) * t, y, ' ', size2);
+C51 COMPILER V9.60.0.0   OLED                                                              11/12/2022 00:39:31 PAGE 4   
+
+ 179   4              continue;
+ 180   4            }
+ 181   3            else enshow = 1;
+ 182   3      
+ 183   3          }
+ 184   2          OLED_ShowChar(x + (size2 / 2) * t, y, temp + '0', size2);
+ 185   2        }
+ 186   1      }
+ 187          
+ 188          void OLED_ShowString(u8 x, u8 y, u8 *chr, u8 Char_Size)
+ 189          {
+ 190   1        u8 j = 0;
+ 191   1        while (chr[j] != '\0')
+ 192   1        {
+ 193   2          OLED_ShowChar(x, y, chr[j], Char_Size);
+ 194   2          x += 8;
+ 195   2          if (x > 120) 
+ 196   2          { 
+ 197   3            x = 0; y += 2; 
+ 198   3          }
+ 199   2          j++;
+ 200   2        }
+ 201   1      }
+ 202          
+ 203          void OLED_ShowCHinese(u8 x, u8 y, u8 no)
+ 204          {
+ 205   1        u8 t, adder = 0;
+ 206   1        OLED_Set_Pos(x, y);
+ 207   1        for (t = 0; t < 16; t++)
+ 208   1        {
+ 209   2          OLED_WR_Byte(Hzk[2 * no][t], SEND_DATA);
+ 210   2          adder += 1;
+ 211   2        }
+ 212   1        OLED_Set_Pos(x, y + 1);
+ 213   1        for (t = 0; t < 16; t++)
+ 214   1        {
+ 215   2          OLED_WR_Byte(Hzk[2 * no + 1][t], SEND_DATA);
+ 216   2          adder += 1;
+ 217   2        } 
+ 218   1      }
+ 219          /***********功能描述：显示显示BMP图片128×64起始点坐标(x,y),x的范围0～127，y为页的范围0～7****************
+             -*/
+ 220          void OLED_DrawBMP(u8 x0, u8 y0, u8 x1, u8 y1, u8 BMP[])
+ 221          {
+ 222   1        u32 j = 0;
+ 223   1        u8 x, y;
+ 224   1      
+ 225   1        if (y1 % 8 == 0) y = y1 / 8;
+ 226   1        else y = y1 / 8 + 1;
+ 227   1        for (y = y0; y < y1; y++)
+ 228   1        {
+ 229   2          OLED_Set_Pos(x0, y);
+ 230   2          for (x = x0; x < x1; x++)
+ 231   2          {
+ 232   3            OLED_WR_Byte(BMP[j++], SEND_DATA);
+ 233   3          }
+ 234   2        }
+ 235   1      }
+ 236          
+ 237          void OLED_Init(void)
+ 238          {
+ 239   1        u8 i = 0;
+C51 COMPILER V9.60.0.0   OLED                                                              11/12/2022 00:39:31 PAGE 5   
+
+ 240   1        while (i < 27)
+ 241   1        {
+ 242   2          OLED_WR_Byte(cmd_data[i], SEND_CMD);
+ 243   2          i++;
+ 244   2        }
+ 245   1      }
+ 246          
+ 247          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1008    ----
+   CONSTANT SIZE    =    873    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     27      39
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

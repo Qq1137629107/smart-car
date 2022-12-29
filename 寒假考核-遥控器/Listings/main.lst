@@ -1,0 +1,53 @@
+C51 COMPILER V9.60.0.0   MAIN                                                              12/29/2022 11:03:32 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\mai
+                    -n.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "commom.h"
+   2          
+   3          u8 txbuf[TX_PLOAD_WIDTH];
+   4          
+   5          void main()
+   6          {
+   7   1          u8 adc_buf[4];
+   8   1          bit b;
+   9   1          P4M0 = 0x40;
+  10   1          EA   = 0;
+  11   1          Init_ADC();
+  12   1          EA = 1;
+  13   1          Lcd_Init();
+  14   1          RF24_Init();
+  15   1          RF24_TX_Mode(SelfAddr);
+  16   1          RF24_SetRfCh(40);
+  17   1          txbuf[0]=66;
+  18   1          while (1) {
+  19   2              b=RF24_TxData(txbuf);
+  20   2              if(b==0)
+  21   2              Lcd_ShowChar(0, 2, '0');
+  22   2              else
+  23   2              Lcd_ShowChar(0, 2, '1');
+  24   2              adc_buf[0] = Read_ADC_Value(1) / 100 + 48;
+  25   2              adc_buf[1] = Read_ADC_Value(1) / 10 % 10 + 48;
+  26   2              adc_buf[2] = Read_ADC_Value(1) % 100 % 10 + 48;
+  27   2              Lcd_ShowString(0, 0, adc_buf);
+  28   2          }
+  29   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    130    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     32       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

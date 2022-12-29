@@ -1,0 +1,5 @@
+".\Objects\main.obj",
+".\Objects\lcd.obj",
+".\Objects\drivers.obj" 
+TO ".\Objects\test1" 
+PRINT(".\Listings\test1.m51") RAMSIZE(256) 

@@ -1,0 +1,139 @@
+C51 COMPILER V9.60.0.0   NRF24L01                                                          11/27/2022 13:31:22 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE NRF24L01
+OBJECT MODULE PLACED IN .\Objects\nrf24l01.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE nrf24l01.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\nrf24l01.lst) TABS(2) OBJECT(.\Objects\nrf24l01.obj)
+
+line level    source
+
+   1          #include "commom.h"
+   2          
+   3          
+   4          /*-----------------------------------------------------------------------------
+   5          SPIÊÕ·¢º¯Êý
+   6          ------------------------------------------------------------------------------*/
+   7          U8 SPI_RW(U8 byte)
+   8          {
+   9   1        U8 i;
+  10   1        for(i=0; i<8; i++)
+  11   1        {
+  12   2          if(byte & 0x80)
+  13   2            MOSI = 1;
+  14   2          else
+  15   2            MOSI = 0;
+  16   2          byte = (byte << 1);
+  17   2          SCK = 1;
+  18   2          byte |= MISO;
+  19   2          SCK = 0;
+  20   2        }
+  21   1        return byte;
+  22   1      }
+  23          
+  24          void nRF24L01P_Write_Reg(U8 reg, U8 value)
+  25          {
+  26   1        CSN = 0; 
+  27   1        SPI_RW(reg);
+  28   1        SPI_RW(value);
+  29   1        CSN = 1;
+  30   1      }
+  31          
+  32          U8 nRF24L01P_Read_Reg(U8 reg){
+  33   1        U8 value;
+  34   1      
+  35   1        CSN = 0;    
+  36   1        SPI_RW(reg);      
+  37   1        value = SPI_RW(0);
+  38   1        CSN = 1;              
+  39   1      
+  40   1        return(value);
+  41   1      }
+  42          
+  43          void nRF24L01P_Write_Buf(U8 reg, const U8 *pBuf, U8 bytes){
+  44   1        U8 i;
+  45   1      
+  46   1        CSN = 0;                                        
+  47   1        SPI_RW(reg);                          
+  48   1        for(i=0; i<bytes; i++)     
+  49   1          SPI_RW(*pBuf++);
+  50   1        CSN = 1;     
+  51   1      } 
+  52          void nRF24L01P_Read_Buf(U8 reg, U8 *pBuf, U8 bytes){
+  53   1        U8 i;
+  54   1      
+C51 COMPILER V9.60.0.0   NRF24L01                                                          11/27/2022 13:31:22 PAGE 2   
+
+  55   1        CSN = 0;                                        
+  56   1        SPI_RW(reg);                           
+  57   1        for(i=0; i<bytes; i++)
+  58   1          pBuf[i] = SPI_RW(0);                                    //¶ÁÈ¡Êý¾Ý£¬µÍ×Ö½ÚÔÚÇ°
+  59   1        CSN = 1;   
+  60   1      }
+  61          
+  62          void RF24_SetRfCh(U8 ch){
+  63   1        CE = 0;
+  64   1        nRF24L01P_Write_Reg(WR_RF_CH, ch);                          //ÉèÖÃ±ä¸üÉäÆµÍ¨µÀ
+  65   1        CE = 1;
+  66   1      }
+  67          
+  68          void RF24_Init(){
+  69   1        SCK = 0;                                  //SPIÊ±ÖÓÏßÀ­µÍ
+  70   1        CSN = 1;                                  //Æ¬Ñ¡½ÅÀ­¸ß´¦ÓÚÎ´Ñ¡×´Ì¬
+  71   1        CE  = 0;                                  //À­µÍÊ¹ÄÜÅäÖÃ£¬ÊÕ·¢Ê±ÒªÀ­¸ß
+  72   1        IRQ = 1;                                  //ÖÐ¶ÏÒý½ÅÌ§¸ß´¦ÓÚÎ´´¥·¢ÖÐ¶Ï×´Ì¬
+  73   1      
+  74   1        CE = 0;
+  75   1        nRF24L01P_Write_Reg(WR_SETUP_AW, 0x03);                           //ÉèÖÃµØÖ·¿í¶ÈÎª5×Ö½Ú
+  76   1        nRF24L01P_Write_Reg(WR_RF_SETUP, RFSETUP);                    //Êý¾Ý´«ÊäÂÊ¡¢·¢Éä¹¦ÂÊÅäÖÃÎª¹«¹²±äÁ¿RfSetupµÄÖµ
+  77   1        nRF24L01P_Write_Reg(WR_EN_AA, 0x01);                            //Ê¹ÄÜ½ÓÊÕÍ¨µÀ0×Ô¶¯Ó¦´ð
+  78   1        nRF24L01P_Write_Reg(WR_EN_RXADDR, 0x01);                    //Ê¹ÄÜ½ÓÊÕÍ¨µÀ0
+  79   1        nRF24L01P_Write_Reg(WR_RX_PW_P0, TX_PLOAD_WIDTH);               //½ÓÊÕÍ¨µÀ0Ñ¡ÔñºÍ·¢ËÍÍ¨µÀÏàÍ¬ÓÐÐ§Êý¾Ý¿í¶È£¬½ö½Ó
+             -ÊÕÓÐÐ§
+  80   1        nRF24L01P_Write_Reg(WR_SETUP_RETR, RETE_VAL);               //×Ô¶¯ÖØ·¢Ê±¼ä¼ä¸ôºÍÖØ·¢´ÎÊý£¬½ö·¢ËÍÓÐÐ§
+  81   1        CE = 1;
+  82   1      }
+  83          
+  84          void RF24_RX_Mode(U8 *SelfAddr)
+  85          {
+  86   1        CE = 0;
+  87   1        nRF24L01P_Write_Buf(WR_RX_ADDR_P0, SelfAddr, TX_ADR_WIDTH);         //½ÓÊÕÉè±¸½ÓÊÕÍ¨µÀ0Ê¹ÓÃºÍ·¢ËÍÉè±¸ÏàÍ¬µÄ·
+             -¢ËÍµØÖ·
+  88   1        nRF24L01P_Write_Reg(WR_CONFIG, 0x0F);                           //CRCÊ¹ÄÜ£¬16Î»CRCÐ£Ñé£¬¿ª»ú£¬½ÓÊÕÄ£Ê½
+  89   1        nRF24L01P_Write_Reg(WR_STATUS, 0xFF);                     //Çå³ýËùÓÐµÄÖÐ¶Ï±êÖ¾Î»
+  90   1        CE = 1;                                                         //À­¸ßCEÆô¶¯½ÓÊÕÉè±¸
+  91   1      } 
+  92          
+  93          bit RF24_RxData(U8 *rxbuf)
+  94          {
+  95   1        U8 state;
+  96   1      
+  97   1        if(IRQ == 0)                                //ÓÐÖÐ¶Ï´¥·¢£¬ÅÐ¶ÏÖÐ¶Ï¿ÉÒÔÌá¸ßCPUÐ§ÂÊ£¬¼õÉÙSPIÍ¨Ñ¶Á¿
+  98   1        {
+  99   2          state = nRF24L01P_Read_Reg(STATUS);                   //¶ÁÈ¡×´Ì¬¼Ä´æÆ÷µÄÖµ        
+ 100   2          nRF24L01P_Write_Reg(WR_STATUS, state);                  //Çå³ýRX_DSÖÐ¶Ï±êÖ¾
+ 101   2          if(state & RX_DR)                           //½ÓÊÕµ½Êý¾Ý
+ 102   2          {
+ 103   3            nRF24L01P_Read_Buf(RD_RX_PLOAD,rxbuf,TX_PLOAD_WIDTH);       //¶ÁÈ¡Êý¾Ý
+ 104   3            nRF24L01P_Write_Reg(FLUSH_RX,0xFF);                 //Çå³ýRX FIFO¼Ä´æÆ÷
+ 105   3            return ON; 
+ 106   3          }
+ 107   2        }    
+ 108   1        return OFF;                                 //Ã»ÊÕµ½ÈÎºÎÊý¾Ý
+ 109   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    289    ----
+   CONSTANT SIZE    =   ----    ----
+C51 COMPILER V9.60.0.0   NRF24L01                                                          11/27/2022 13:31:22 PAGE 3   
+
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      10
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

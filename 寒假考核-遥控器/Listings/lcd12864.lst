@@ -1,0 +1,134 @@
+C51 COMPILER V9.60.0.0   LCD12864                                                          12/29/2022 11:03:32 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE LCD12864
+OBJECT MODULE PLACED IN .\Objects\lcd12864.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE lcd12864.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings
+                    -\lcd12864.lst) TABS(2) OBJECT(.\Objects\lcd12864.obj)
+
+line level    source
+
+   1          #include "commom.h"
+   2          #include "font.h"
+   3          
+   4          void SPI_Send_Byte(u8 Data, u8 Mode)
+   5          {
+   6   1          u8 i;
+   7   1          if (Mode)
+   8   1              RS = 1;
+   9   1          else
+  10   1              RS = 0;
+  11   1          CS = 0;
+  12   1          for (i = 0; i < 8; i++) {
+  13   2              SCK = 0;
+  14   2              if (Data & 0x80) {
+  15   3                  SDA = 1;
+  16   3              } else
+  17   2                  SDA = 0;
+  18   2              SCK = 1;
+  19   2              Data <<= 1;
+  20   2          }
+  21   1          CS = 1;
+  22   1          RS = 1;
+  23   1      }
+  24          
+  25          void Lcd_Set_Pos(u8 x, u8 y)
+  26          {
+  27   1          SPI_Send_Byte(0xb0 + y, CMD);
+  28   1        SPI_Send_Byte(((x & 0xf0) >> 4) | 0x10, CMD);
+  29   1        SPI_Send_Byte((x & 0x0f), CMD);
+  30   1      }
+  31          
+  32          void Lcd_Clear()
+  33          {
+  34   1        u8 i,j;
+  35   1        for(i=0;i<8;i++)
+  36   1        {
+  37   2          SPI_Send_Byte(0xb0 + i, CMD);
+  38   2          SPI_Send_Byte(0x00, CMD);
+  39   2          SPI_Send_Byte(0x10, CMD);
+  40   2          for(j=0;j<128;j++)
+  41   2          {
+  42   3            SPI_Send_Byte(0x00,DATA);
+  43   3          }
+  44   2        }
+  45   1      }
+  46          
+  47          void Lcd_ShowChar(u8 x, u8 y, u8 chr)
+  48          {
+  49   1        u8 c = 0, i = 0;
+  50   1        c = chr - ' ';    
+  51   1        if (x > 128 - 1)
+  52   1        {
+  53   2          x = 0; y = y + 2;
+  54   2        }
+C51 COMPILER V9.60.0.0   LCD12864                                                          12/29/2022 11:03:32 PAGE 2   
+
+  55   1      
+  56   1          Lcd_Set_Pos(x, y);
+  57   1          for (i = 0; i < 6; i++)
+  58   1            SPI_Send_Byte(F6x8[c][i], DATA);
+  59   1      }
+  60          
+  61          
+  62          void Lcd_ShowString(u8 x, u8 y, u8 *chr)
+  63          {
+  64   1        u8 j = 0;
+  65   1        while (chr[j] != '\0')
+  66   1        {
+  67   2          Lcd_ShowChar(x, y, chr[j]);
+  68   2          x += 8;
+  69   2          if (x > 120) 
+  70   2          { 
+  71   3            x = 0; y += 2; 
+  72   3          }
+  73   2          j++;
+  74   2        }
+  75   1      }
+  76          void Delay100ms()   //@11.0592MHz
+  77          {
+  78   1        unsigned char i, j;
+  79   1      
+  80   1        i = 180;
+  81   1        j = 73;
+  82   1        do
+  83   1        {
+  84   2          while (--j);
+  85   2        } while (--i);
+  86   1      }
+  87          
+  88          void Lcd_Init()
+  89          {
+  90   1        RST=0;
+  91   1        Delay100ms();
+  92   1        RST=1;
+  93   1        SPI_Send_Byte(0xe2, CMD);
+  94   1        SPI_Send_Byte(0x2c, CMD);
+  95   1        SPI_Send_Byte(0x2e, CMD);
+  96   1        SPI_Send_Byte(0x2f, CMD);
+  97   1        SPI_Send_Byte(0x23, CMD);
+  98   1        SPI_Send_Byte(0x81, CMD);
+  99   1        SPI_Send_Byte(0x28, CMD);
+ 100   1        SPI_Send_Byte(0xa2, CMD);
+ 101   1        SPI_Send_Byte(0xc8, CMD);
+ 102   1        SPI_Send_Byte(0xa0, CMD);
+ 103   1        SPI_Send_Byte(0x40, CMD);
+ 104   1        SPI_Send_Byte(0xaf, CMD);
+ 105   1        Lcd_Clear();
+ 106   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    354    ----
+   CONSTANT SIZE    =   2072    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       6
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.60.0.0   LCD12864                                                          12/29/2022 11:03:32 PAGE 3   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,108 @@
+C51 COMPILER V9.60.0.0   LCD                                                               11/26/2022 15:51:02 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE LCD
+OBJECT MODULE PLACED IN .\Objects\lcd.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE lcd.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\lcd.
+                    -lst) TABS(2) OBJECT(.\Objects\lcd.obj)
+
+line level    source
+
+   1          #include "drivers.h"
+   2          #include "font.h"
+   3          
+   4          void Spi_Write_Byte(u8 dat, u8 mode)
+   5          {
+   6   1        u8 i;
+   7   1        if (mode)
+   8   1          RS=1;
+   9   1        else
+  10   1          RS=0;
+  11   1        CS=0;
+  12   1        for (i = 0; i < 8; i++)
+  13   1        {
+  14   2          SCK=0;
+  15   2          if (dat & 0x80)
+  16   2          {
+  17   3            SDA=1;
+  18   3          }
+  19   2          else
+  20   2            SDA=0;
+  21   2          SCK=1;
+  22   2          dat <<= 1;
+  23   2        }
+  24   1        CS=1;
+  25   1        RS=1;
+  26   1      }
+  27          
+  28          void Lcd_Set_Pos(u8 x, u8 y)
+  29          {
+  30   1        Spi_Write_Byte(0xb0 + y, CMD);
+  31   1        Spi_Write_Byte(((x & 0xf0) >> 4) | 0x10, CMD);
+  32   1        Spi_Write_Byte((x & 0x0f), CMD);
+  33   1      }
+  34          
+  35          void Lcd_Clear()
+  36          {
+  37   1        u8 i,j;
+  38   1        for(i=0;i<8;i++)
+  39   1        {
+  40   2          Spi_Write_Byte(0xb0 + i, CMD);
+  41   2          Spi_Write_Byte(0x00, CMD);
+  42   2          Spi_Write_Byte(0x10, CMD);
+  43   2          for(j=0;j<128;j++)
+  44   2          {
+  45   3            Spi_Write_Byte(0x00,DATA);
+  46   3          }
+  47   2        }
+  48   1      }
+  49          
+  50          void Lcd_ShowChar(u8 x, u8 y, u8 chr)
+  51          {
+  52   1        u8 c = 0, i = 0;
+  53   1        c = chr - ' ';    
+  54   1        if (x > 128 - 1)
+C51 COMPILER V9.60.0.0   LCD                                                               11/26/2022 15:51:02 PAGE 2   
+
+  55   1        {
+  56   2          x = 0; y = y + 2;
+  57   2        }
+  58   1      
+  59   1          Lcd_Set_Pos(x, y);
+  60   1          for (i = 0; i < 6; i++)
+  61   1            Spi_Write_Byte(F6x8[c][i], DATA);
+  62   1      }
+  63          
+  64          void Lcd_Init()
+  65          {
+  66   1        RST=0;
+  67   1        Delay100ms();
+  68   1        RST=1;
+  69   1        Spi_Write_Byte(0xe2, CMD);
+  70   1        Spi_Write_Byte(0x2c, CMD);
+  71   1        Spi_Write_Byte(0x2e, CMD);
+  72   1        Spi_Write_Byte(0x2f, CMD);
+  73   1        Spi_Write_Byte(0x23, CMD);
+  74   1        Spi_Write_Byte(0x81, CMD);
+  75   1        Spi_Write_Byte(0x28, CMD);
+  76   1        Spi_Write_Byte(0xa2, CMD);
+  77   1        Spi_Write_Byte(0xc8, CMD);
+  78   1        Spi_Write_Byte(0xa0, CMD);
+  79   1        Spi_Write_Byte(0x40, CMD);
+  80   1        Spi_Write_Byte(0xaf, CMD);
+  81   1        Lcd_Clear();
+  82   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    280    ----
+   CONSTANT SIZE    =   2072    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

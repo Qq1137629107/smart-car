@@ -1,0 +1,89 @@
+{
+  "name": "oledtest",
+  "type": "C51",
+  "dependenceList": [],
+  "srcDirs": [],
+  "virtualFolder": {
+    "name": "<virtual_root>",
+    "files": [],
+    "folders": [
+      {
+        "name": "Source Group 1",
+        "files": [
+          {
+            "path": "STARTUP.A51"
+          },
+          {
+            "path": "main.c"
+          }
+        ],
+        "folders": []
+      },
+      {
+        "name": "oled",
+        "files": [
+          {
+            "path": "oled.c"
+          },
+          {
+            "path": "oled.h"
+          },
+          {
+            "path": "oledfont.h"
+          },
+          {
+            "path": "cmd_data.h"
+          },
+          {
+            "path": "bmp.h"
+          }
+        ],
+        "folders": []
+      },
+      {
+        "name": "public",
+        "files": [
+          {
+            "path": "public.h"
+          },
+          {
+            "path": "public.c"
+          }
+        ],
+        "folders": []
+      }
+    ]
+  },
+  "outDir": "build",
+  "deviceName": null,
+  "packDir": null,
+  "miscInfo": {
+    "uid": "3933b44fd4c7080f5b64dce7abf9f49f"
+  },
+  "targets": {
+    "Target 1": {
+      "excludeList": [],
+      "toolchain": "Keil_C51",
+      "compileConfig": {
+        "options": "null"
+      },
+      "uploader": "Custom",
+      "uploadConfig": {
+        "bin": "",
+        "commandLine": "",
+        "eraseChipCommand": ""
+      },
+      "uploadConfigMap": {},
+      "custom_dep": {
+        "name": "default",
+        "incList": [
+          "../../../APP/Keil/C51/INC/STC"
+        ],
+        "libList": [],
+        "sourceDirList": [],
+        "defineList": []
+      }
+    }
+  },
+  "version": "3.3"
+}

@@ -1,0 +1,51 @@
+C51 COMPILER V9.60.0.0   MOTOR_DRIVER                                                      11/25/2022 15:46:26 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE MOTOR_DRIVER
+OBJECT MODULE PLACED IN .\Objects\motor_driver.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE motor_driver.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\List
+                    -ings\motor_driver.lst) TABS(2) OBJECT(.\Objects\motor_driver.obj)
+
+line level    source
+
+   1          #include "public.h"
+   2          
+   3          
+   4          
+   5          void step_motor_driver()
+   6          {
+   7   1          IN1=1;
+   8   1          IN2=0;
+   9   1          IN3=0;
+  10   1          IN4=0;
+  11   1      Delay50ms();
+  12   1          IN1=0;
+  13   1          IN2=1;
+  14   1          IN3=0;
+  15   1          IN4=0;
+  16   1      Delay50ms();
+  17   1          IN1=0;
+  18   1          IN2=0;
+  19   1          IN3=1;
+  20   1          IN4=0;
+  21   1      Delay50ms();
+  22   1          IN1=0;
+  23   1          IN2=0;
+  24   1          IN3=0;
+  25   1          IN4=1;
+  26   1          Delay50ms();
+  27   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     44    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

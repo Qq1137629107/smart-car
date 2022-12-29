@@ -1,0 +1,295 @@
+C51 COMPILER V9.60.0.0   NRF24L01P                                                         11/22/2022 10:57:34 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE NRF24L01P
+OBJECT MODULE PLACED IN .\Objects\nRF24L01P.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE nRF24L01P.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listing
+                    -s\nRF24L01P.lst) TABS(2) OBJECT(.\Objects\nRF24L01P.obj)
+
+line level    source
+
+   1          /*********************************************************************************************************
+             -****
+   2          µ¥Ôª¹¦ÄÜ£º***STC15ÏµÁÐnRF24L01PÎÞÏßÇý¶¯***
+   3          ÎÄ¼þÃû³Æ£ºNRF24L01P.c
+   4          ´úÂëÕûÀí£ºãÆ´ºÁÖ----2018Äê3ÔÂ25ÈÕ
+   5          ÃâÔðÉùÃ÷£º¸Ã³ÌÐò½öÓÃÓÚÑ§Ï°Óë½»Á÷£¬²»µÃÓÃÓÚÉÌÒµÓÃÍ¾£¬²»¶ÔÒòÊ¹ÓÃ±¾´úÂë¶ø²úÉúµÄÈÎºÎºó¹û¸ºÈÎºÎÔðÈÎ
+   6          ¹æ·¶ËµÃ÷£ºÎª±ãÓÚÔÄ¶Á£¬º¯ÊýÃû¡¢È«¾Ö±äÁ¿Ê¹ÓÃ´óÍÕ·å£¬¾Ö²¿±äÁ¿Ê¹ÓÃÐ¡ÍÕ·å£¬³£Á¿ÃûÊ¹ÓÃÈ«´óÐ´
+   7          µ÷ÓÃ·½·¨£º±¾»úµØÖ·ÎªÈ«¾Ö±äÁ¿SelfAddr£¬ÆµµÀ¡¢¹¦ÂÊ¡¢ËÙÂÊÍ¨¹ý¹«¹²º¯ÊýRF24_RfSetupÉèÖÃ
+   8                ¹¦ÂÊÅäÖÃÖµÊÊÓ¦Ì¨²úSI24R1Ð¾Æ¬µÄÄ£¿é¼°nRF24L01P+PAµÄÒÚ°ÛÌØ´ó¹¦ÂÊÄ£¿é£¬¸ù¾ÝÊ¹ÓÃÄ£¿éÑ¡Ôñ¶ÔÓ¦µÄ¹¦ÂÊ²ÎÊýÅäÖÃ
+   9          **********************************************************************************************************
+             -***/
+  10          #include "nRF24L01P.h"
+*** WARNING C318 IN LINE 4 OF nRF24L01P.h: can't open file 'STC15.H'
+*** WARNING C318 IN LINE 5 OF nRF24L01P.h: can't open file 'Sys.h'
+*** WARNING C318 IN LINE 7 OF nRF24L01P.h: can't open file 'Timer.h'
+  11          
+  12          
+  13          U8 SelfAddr[TX_ADR_WIDTH] = {0x01, 0x01, 0x01, 0x01, 0x01};       //±¾»úÓ²¼þµØÖ·
+  14          
+  15          
+  16          
+  17          /*********************************************************************************************************
+             -*****************/
+  18          /*=========================================================Ë½ÓÐº¯Êý=======================================
+             -================*/
+  19          /*********************************************************************************************************
+             -*****************/
+  20          
+  21          /*-----------------------------------------------------------------------------
+  22          º¯ÊýÃû³Æ£ºSPI_RW
+  23          ÊäÈë²ÎÊý£ºbyte£º´ý·¢ËÍµÄÒ»¸ö×Ö½ÚÊý¾Ý
+  24          ·µ»ØÊý¾Ý£ºÊÕµ½µÄÒ»¸ö×Ö½ÚÊý¾Ý
+  25          ¹¦ÄÜÃèÊö£ºÄ£ÄâSPI½Ó¿ÚÍ¨Ñ¶ÊÕ·¢Ò»Ìå»¯º¯Êý
+  26          ------------------------------------------------------------------------------*/
+  27          U8 SPI_RW(U8 byte){
+  28   1        U8 i;
+  29   1        for(i=0; i<8; i++)
+  30   1        {
+  31   2          if(byte & 0x80)
+  32   2            MOSI = 1;
+*** ERROR C202 IN LINE 32 OF nRF24L01P.c: 'P13': undefined identifier
+  33   2          else
+  34   2            MOSI = 0;
+*** ERROR C202 IN LINE 34 OF nRF24L01P.c: 'P13': undefined identifier
+  35   2          byte = (byte << 1);
+  36   2          SCK = 1;
+*** ERROR C202 IN LINE 36 OF nRF24L01P.c: 'P15': undefined identifier
+  37   2          byte |= MISO;
+*** ERROR C202 IN LINE 37 OF nRF24L01P.c: 'P14': undefined identifier
+  38   2          SCK = 0;
+*** ERROR C202 IN LINE 38 OF nRF24L01P.c: 'P15': undefined identifier
+  39   2        }
+  40   1        return byte;
+  41   1      }
+C51 COMPILER V9.60.0.0   NRF24L01P                                                         11/22/2022 10:57:34 PAGE 2   
+
+  42          
+  43          /*-----------------------------------------------------------------------------
+  44          º¯ÊýÃû³Æ£ºnRF24L01P_Write_Reg
+  45          ÊäÈë²ÎÊý£ºreg£º¼Ä´æÆ÷Ó³ÉäµØÖ·£¨¸ñÊ½£ºWRITE_REG£üreg£©£»value£º´ýÐ´µÄ¼Ä´æÆ÷Öµ
+  46          ¹¦ÄÜÃèÊö£ºÐ´×´Ì¬¼Ä´æÆ÷µÄÖµ
+  47          ------------------------------------------------------------------------------*/
+  48          void nRF24L01P_Write_Reg(U8 reg, U8 value){
+  49   1        CSN = 0;
+*** ERROR C202 IN LINE 49 OF nRF24L01P.c: 'P16': undefined identifier
+  50   1        SPI_RW(reg);
+  51   1        SPI_RW(value);
+  52   1        CSN = 1;
+*** ERROR C202 IN LINE 52 OF nRF24L01P.c: 'P16': undefined identifier
+  53   1      }
+  54          
+  55          /*-----------------------------------------------------------------------------
+  56          º¯ÊýÃû³Æ£ºnRF24L01P_Write_Buf
+  57          ÊäÈë²ÎÊý£ºreg£º¼Ä´æÆ÷Ó³ÉäµØÖ·£¨¸ñÊ½£ºWRITE_REG£üreg£©£»pBuf£º´ýÐ´Êý¾ÝÊ×µØÖ·£»bytes£ºÐ´Êý¾Ý×Ö½ÚÊý
+  58          ¹¦ÄÜÃèÊö£ºÐ´×´Ì¬¼Ä´æÆ÷µÄÖµ
+  59          ------------------------------------------------------------------------------*/
+  60          void nRF24L01P_Write_Buf(U8 reg, const U8 *pBuf, U8 bytes){
+  61   1        U8 i;
+  62   1      
+  63   1        CSN = 0;                                        
+*** ERROR C202 IN LINE 63 OF nRF24L01P.c: 'P16': undefined identifier
+  64   1        SPI_RW(reg);                          
+  65   1        for(i=0; i<bytes; i++)     
+  66   1          SPI_RW(*pBuf++);
+  67   1        CSN = 1;     
+*** ERROR C202 IN LINE 67 OF nRF24L01P.c: 'P16': undefined identifier
+  68   1      }                            
+  69          
+  70          /*-----------------------------------------------------------------------------
+  71          º¯ÊýÃû³Æ£ºnRF24L01P_Read_Reg
+  72          ÊäÈë²ÎÊý£ºreg£º¼Ä´æÆ÷Ó³ÉäµØÖ·£¨¸ñÊ½£ºREAD_REG£üreg£©
+  73          ·µ»ØÊý¾Ý£º¼Ä´æÆ÷Öµ
+  74          ¹¦ÄÜÃèÊö£º¶Á×´Ì¬¼Ä´æÆ÷µÄÖµ£¨µ¥×Ö½Ú£©
+  75          ------------------------------------------------------------------------------*/
+  76          U8 nRF24L01P_Read_Reg(U8 reg){
+  77   1        U8 value;
+  78   1      
+  79   1        CSN = 0;    
+*** ERROR C202 IN LINE 79 OF nRF24L01P.c: 'P16': undefined identifier
+  80   1        SPI_RW(reg);      
+  81   1        value = SPI_RW(0);
+  82   1        CSN = 1;              
+*** ERROR C202 IN LINE 82 OF nRF24L01P.c: 'P16': undefined identifier
+  83   1      
+  84   1        return(value);
+  85   1      }
+  86          
+  87          /*-----------------------------------------------------------------------------
+  88          º¯ÊýÃû³Æ£ºnRF24L01P_Read_Reg
+  89          ÊäÈë²ÎÊý£ºreg£º¼Ä´æÆ÷Ó³ÉäµØÖ·£¨¸ñÊ½£ºREAD_REG£üreg£©£»pBuf£º½ÓÊÕ»º³åÇøµÄÊ×µØÖ·£»bytes£º¶ÁÈ¡×Ö½ÚÊý
+  90          ¹¦ÄÜÃèÊö£º¶Á×´Ì¬¼Ä´æÆ÷µÄÖµ£¨¶à×Ö½Ú£©
+  91          ------------------------------------------------------------------------------*/
+  92          void nRF24L01P_Read_Buf(U8 reg, U8 *pBuf, U8 bytes){
+  93   1        U8 i;
+  94   1      
+  95   1        CSN = 0;                                        
+*** ERROR C202 IN LINE 95 OF nRF24L01P.c: 'P16': undefined identifier
+  96   1        SPI_RW(reg);                           
+C51 COMPILER V9.60.0.0   NRF24L01P                                                         11/22/2022 10:57:34 PAGE 3   
+
+  97   1        for(i=0; i<bytes; i++)
+  98   1          pBuf[i] = SPI_RW(0);                                    //¶ÁÈ¡Êý¾Ý£¬µÍ×Ö½ÚÔÚÇ°
+  99   1        CSN = 1;   
+*** ERROR C202 IN LINE 99 OF nRF24L01P.c: 'P16': undefined identifier
+ 100   1      }
+ 101          
+ 102          
+ 103          /*********************************************************************************************************
+             -*****************/
+ 104          /*=========================================================¹«ÓÐº¯Êý=======================================
+             -================*/
+ 105          /*********************************************************************************************************
+             -*****************/
+ 106          
+ 107          /*-----------------------------------------------------------------------------
+ 108          º¯ÊýÃû³Æ£ºRF24_RfSetup
+ 109          ÊäÈë²ÎÊý£ºch£ºÉäÆµ¹¤×÷ÆµµÀ
+ 110          ¹¦ÄÜÃèÊö£ºnRF24L01P+¹¤×÷ÆµµÀÉèÖÃ
+ 111          ------------------------------------------------------------------------------*/
+ 112          void RF24_SetRfCh(U8 ch){
+ 113   1        CE = 0;
+*** ERROR C202 IN LINE 113 OF nRF24L01P.c: 'P17': undefined identifier
+ 114   1        nRF24L01P_Write_Reg(WR_RF_CH, ch);                          //ÉèÖÃ±ä¸üÉäÆµÍ¨µÀ
+ 115   1        CE = 1;
+*** ERROR C202 IN LINE 115 OF nRF24L01P.c: 'P17': undefined identifier
+ 116   1      }
+ 117          
+ 118          /*-----------------------------------------------------------------------------
+ 119          º¯ÊýÃû³Æ£ºRF24_Init
+ 120          ¹¦ÄÜÃèÊö£ºnRF24L01P+³õÊ¼»¯
+ 121          ------------------------------------------------------------------------------*/
+ 122          void RF24_Init(){
+ 123   1        SCK = 0;                                  //SPIÊ±ÖÓÏßÀ­µÍ
+*** ERROR C202 IN LINE 123 OF nRF24L01P.c: 'P15': undefined identifier
+ 124   1        CSN = 1;                                  //Æ¬Ñ¡½ÅÀ­¸ß´¦ÓÚÎ´Ñ¡×´Ì¬
+*** ERROR C202 IN LINE 124 OF nRF24L01P.c: 'P16': undefined identifier
+ 125   1        CE  = 0;                                  //À­µÍÊ¹ÄÜÅäÖÃ£¬ÊÕ·¢Ê±ÒªÀ­¸ß
+*** ERROR C202 IN LINE 125 OF nRF24L01P.c: 'P17': undefined identifier
+ 126   1        IRQ = 1;                                  //ÖÐ¶ÏÒý½ÅÌ§¸ß´¦ÓÚÎ´´¥·¢ÖÐ¶Ï×´Ì¬
+*** ERROR C202 IN LINE 126 OF nRF24L01P.c: 'P12': undefined identifier
+ 127   1      
+ 128   1        CE = 0;
+*** ERROR C202 IN LINE 128 OF nRF24L01P.c: 'P17': undefined identifier
+ 129   1        nRF24L01P_Write_Reg(WR_SETUP_AW, 0x03);                           //ÉèÖÃµØÖ·¿í¶ÈÎª5×Ö½Ú
+ 130   1        nRF24L01P_Write_Reg(WR_RF_SETUP, RFSETUP);                    //Êý¾Ý´«ÊäÂÊ¡¢·¢Éä¹¦ÂÊÅäÖÃÎª¹«¹²±äÁ¿RfSetupµÄÖµ
+ 131   1        nRF24L01P_Write_Reg(WR_EN_AA, 0x01);                            //Ê¹ÄÜ½ÓÊÕÍ¨µÀ0×Ô¶¯Ó¦´ð
+ 132   1        nRF24L01P_Write_Reg(WR_EN_RXADDR, 0x01);                    //Ê¹ÄÜ½ÓÊÕÍ¨µÀ0
+ 133   1        nRF24L01P_Write_Reg(WR_RX_PW_P0, TX_PLOAD_WIDTH);               //½ÓÊÕÍ¨µÀ0Ñ¡ÔñºÍ·¢ËÍÍ¨µÀÏàÍ¬ÓÐÐ§Êý¾Ý¿í¶È£¬½ö½Ó
+             -ÊÕÓÐÐ§
+ 134   1        nRF24L01P_Write_Reg(WR_SETUP_RETR, RETE_VAL);               //×Ô¶¯ÖØ·¢Ê±¼ä¼ä¸ôºÍÖØ·¢´ÎÊý£¬½ö·¢ËÍÓÐÐ§
+ 135   1        CE = 1;
+*** ERROR C202 IN LINE 135 OF nRF24L01P.c: 'P17': undefined identifier
+ 136   1      }
+ 137          
+ 138          /*-----------------------------------------------------------------------------
+ 139          º¯ÊýÃû³Æ£ºRF24_RX_Mode
+ 140          ¹¦ÄÜÃèÊö£ºnRF24L01P+ÉèÖÃÎª½ÓÊÕÄ£Ê½
+ 141          ------------------------------------------------------------------------------*/
+ 142          void RF24_RX_Mode()
+ 143          {
+ 144   1        CE = 0;
+*** ERROR C202 IN LINE 144 OF nRF24L01P.c: 'P17': undefined identifier
+C51 COMPILER V9.60.0.0   NRF24L01P                                                         11/22/2022 10:57:34 PAGE 4   
+
+ 145   1        nRF24L01P_Write_Buf(WR_RX_ADDR_P0, SelfAddr, TX_ADR_WIDTH);         //½ÓÊÕÉè±¸½ÓÊÕÍ¨µÀ0Ê¹ÓÃºÍ·¢ËÍÉè±¸ÏàÍ¬µÄ·
+             -¢ËÍµØÖ·
+ 146   1        nRF24L01P_Write_Reg(WR_CONFIG, 0x0F);                           //CRCÊ¹ÄÜ£¬16Î»CRCÐ£Ñé£¬¿ª»ú£¬½ÓÊÕÄ£Ê½
+ 147   1        nRF24L01P_Write_Reg(WR_STATUS, 0xFF);                     //Çå³ýËùÓÐµÄÖÐ¶Ï±êÖ¾Î»
+ 148   1        CE = 1;                                                         //À­¸ßCEÆô¶¯½ÓÊÕÉè±¸
+*** ERROR C202 IN LINE 148 OF nRF24L01P.c: 'P17': undefined identifier
+ 149   1      }           
+ 150          
+ 151          /*-----------------------------------------------------------------------------
+ 152          º¯ÊýÃû³Æ£ºRF24_TX_Mode
+ 153          ÊäÈë²ÎÊý£º*toAddr£º·¢ËÍÄ¿±êµØÖ·Ö¸Õë
+ 154          ¹¦ÄÜÃèÊö£ºnRF24L01P+ÉèÖÃÎª·¢ËÍÄ£Ê½
+ 155          ------------------------------------------------------------------------------*/
+ 156          void RF24_TX_Mode(U8 *toAddr)
+ 157          {
+ 158   1        CE = 0;
+*** ERROR C202 IN LINE 158 OF nRF24L01P.c: 'P17': undefined identifier
+ 159   1        nRF24L01P_Write_Buf(WR_TX_ADDR, toAddr, TX_ADR_WIDTH);            //Ð´Èë·¢ËÍµØÖ·
+ 160   1        nRF24L01P_Write_Reg(WR_CONFIG, 0x0E);                       //CRCÊ¹ÄÜ£¬16Î»CRCÐ£Ñé£¬¿ª»ú£¬·¢ËÍÄ£Ê½£¬ÆÁ±Î×Ô¶¯ÖØ·¢Ö
+             -Ð¶Ï
+ 161   1        nRF24L01P_Write_Buf(WR_RX_ADDR_P0, toAddr, TX_ADR_WIDTH);         //ÎªÁËÓ¦´ð½ÓÊÕÉè±¸£¬½ÓÊÕÍ¨µÀ0µØÖ·ºÍ·¢ËÍµØÖ·
+             -ÏàÍ¬
+ 162   1        nRF24L01P_Write_Reg(WR_STATUS, 0xFF);                     //Çå³ýËùÓÐµÄÖÐ¶Ï±êÖ¾Î»
+ 163   1        //CE = 1;
+ 164   1      }
+ 165          
+ 166          /*-----------------------------------------------------------------------------
+ 167          º¯ÊýÃû³Æ£ºRF24_RxData
+ 168          ÊäÈë²ÎÊý£º*rxbuf£º±£´æ½ÓÊÕÊý¾ÝµÄ»º³åÇøÖ¸Õë
+ 169          ·µ»ØÊý¾Ý£ºÊÇ·ñÊÕµ½Êý¾Ý£¬1ÊÕµ½£¬0Î´ÊÕµ½
+ 170          ¹¦ÄÜÃèÊö£ºnRF24L01P+ÅÐ¶ÏÊÇ·ñÊÕµ½Êý¾Ý£¬ÈôÊÕµ½Ö±½ÓÈ¡³ö£¬Ó¦ÔÚÖ÷Ñ­»·ÖÐµ÷ÓÃ
+ 171          ------------------------------------------------------------------------------*/
+ 172          bit RF24_RxData(U8 *rxbuf)
+ 173          {
+ 174   1        U8 state;
+ 175   1      
+ 176   1        if(IRQ == 0)                                //ÓÐÖÐ¶Ï´¥·¢£¬ÅÐ¶ÏÖÐ¶Ï¿ÉÒÔÌá¸ßCPUÐ§ÂÊ£¬¼õÉÙSPIÍ¨Ñ¶Á¿
+*** ERROR C202 IN LINE 176 OF nRF24L01P.c: 'P12': undefined identifier
+ 177   1        {
+ 178   2          state = nRF24L01P_Read_Reg(STATUS);                   //¶ÁÈ¡×´Ì¬¼Ä´æÆ÷µÄÖµ        
+ 179   2          nRF24L01P_Write_Reg(WR_STATUS, state);                  //Çå³ýRX_DSÖÐ¶Ï±êÖ¾
+ 180   2          if(state & RX_DR)                           //½ÓÊÕµ½Êý¾Ý
+ 181   2          {
+ 182   3            nRF24L01P_Read_Buf(RD_RX_PLOAD,rxbuf,TX_PLOAD_WIDTH);       //¶ÁÈ¡Êý¾Ý
+ 183   3            nRF24L01P_Write_Reg(FLUSH_RX,0xFF);                 //Çå³ýRX FIFO¼Ä´æÆ÷
+ 184   3            return ON; 
+*** ERROR C202 IN LINE 184 OF nRF24L01P.c: 'ON': undefined identifier
+ 185   3          }
+ 186   2        }    
+ 187   1        return OFF;                                 //Ã»ÊÕµ½ÈÎºÎÊý¾Ý
+*** ERROR C202 IN LINE 187 OF nRF24L01P.c: 'OFF': undefined identifier
+ 188   1      }
+ 189          
+ 190          /*-----------------------------------------------------------------------------
+ 191          º¯ÊýÃû³Æ£ºRF24_TxData
+ 192          ÊäÈë²ÎÊý£º*txbuf£º´ý·¢ËÍÊý¾ÝµÄ»º³åÇøÖ¸Õë
+ 193          ·µ»ØÊý¾Ý£ºÊÇ·ñ·¢ËÍ³É¹¦£¬1·¢ËÍ³É¹¦£¬0·¢ËÍÊ§°Ü
+ 194          ¹¦ÄÜÃèÊö£ºnRF24L01P+·¢ËÍÊý¾Ý
+ 195          ------------------------------------------------------------------------------*/
+ 196          bit RF24_TxData(U8 *txbuf)
+ 197          {
+ 198   1        U8 state;
+C51 COMPILER V9.60.0.0   NRF24L01P                                                         11/22/2022 10:57:34 PAGE 5   
+
+ 199   1        
+ 200   1        while(RPD == 1);
+ 201   1        CE=0;                                   //CEÀ­µÍ£¬Ê¹ÄÜ24L01ÅäÖÃ
+*** ERROR C202 IN LINE 201 OF nRF24L01P.c: 'P17': undefined identifier
+ 202   1        nRF24L01P_Write_Buf(WR_TX_PLOAD,txbuf,TX_PLOAD_WIDTH);            //Ð´Êý¾Ýµ½TX FIFO,32¸ö×Ö½Ú
+ 203   1        CE=1;                                   //CEÖÃ¸ß£¬Ê¹ÄÜ·¢ËÍ     
+*** ERROR C202 IN LINE 203 OF nRF24L01P.c: 'P17': undefined identifier
+ 204   1      
+ 205   1        while(IRQ == 1);                              //µÈ´ý·¢ËÍÍê³É
+*** ERROR C202 IN LINE 205 OF nRF24L01P.c: 'P12': undefined identifier
+ 206   1        state=nRF24L01P_Read_Reg(STATUS);                       //¶ÁÈ¡×´Ì¬¼Ä´æÆ÷µÄÖµ     
+ 207   1        nRF24L01P_Write_Reg(WR_STATUS, state);                    //Çå³ýTX_DS»òMAX_RTÖÐ¶Ï±êÖ¾
+ 208   1        if(state&TX_DS)                               //·¢ËÍÍê³É
+ 209   1          return ON;
+*** ERROR C202 IN LINE 209 OF nRF24L01P.c: 'ON': undefined identifier
+ 210   1        nRF24L01P_Write_Reg(FLUSH_TX,0xff);                     //Çå³ýTX FIFO¼Ä´æÆ÷ 
+ 211   1        return OFF;                                 //·¢ËÍÊ§°Ü
+*** ERROR C202 IN LINE 211 OF nRF24L01P.c: 'OFF': undefined identifier
+ 212   1      }
+ 213          
+ 214          
+ 215          
+ 216          
+ 217          
+ 218          /*********************************************************************************************************
+             -****
+ 219          µ¥Ôª¹¦ÄÜ£º***STC15ÏµÁÐnRF24L01PÎÞÏßÇý¶¯***
+ 220          ÎÄ¼þÃû³Æ£ºNRF24L01P.h
+ 221          ´úÂëÕûÀí£ºãÆ´ºÁÖ----2018Äê3ÔÂ25ÈÕ
+ 222          ÃâÔðÉùÃ÷£º¸Ã³ÌÐò½öÓÃÓÚÑ§Ï°Óë½»Á÷£¬²»µÃÓÃÓÚÉÌÒµÓÃÍ¾£¬²»¶ÔÒòÊ¹ÓÃ±¾´úÂë¶ø²úÉúµÄÈÎºÎºó¹û¸ºÈÎºÎÔðÈÎ
+ 223          ¹æ·¶ËµÃ÷£ºÎªÆ«ÓÚÔÄ¶Á£¬º¯ÊýÃû¡¢È«¾Ö±äÁ¿Ê¹ÓÃ´óÍÕ·å£¬¾Ö²¿±äÁ¿Ê¹ÓÃÐ¡ÍÕ·å£¬³£Á¿ÃûÊ¹ÓÃÈ«´óÐ´
+ 224          µ÷ÓÃ·½·¨£º±¾»úµØÖ·ÎªÈ«¾Ö±äÁ¿SelfAddr£¬ÆµµÀ¡¢¹¦ÂÊ¡¢ËÙÂÊÍ¨¹ý¹«¹²º¯ÊýRF24_RfSetupÉèÖÃ
+ 225                ¹¦ÂÊÅäÖÃÖµÊÊÓ¦Ì¨²úSI24R1Ð¾Æ¬µÄÄ£¿é¼°nRF24L01P+PAµÄÒÚ°ÛÌØ´ó¹¦ÂÊÄ£¿é£¬¸ù¾ÝÊ¹ÓÃÄ£¿éÑ¡Ôñ¶ÔÓ¦µÄ¹¦ÂÊ²ÎÊýÅäÖÃ
+ 226          *******************************************
+*** ERROR C300 IN LINE 226 OF nRF24L01P.c: unterminated comment
+
+C51 COMPILATION COMPLETE.  3 WARNING(S),  33 ERROR(S)

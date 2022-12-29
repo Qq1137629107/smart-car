@@ -1,0 +1,136 @@
+C51 COMPILER V9.60.0.0   I2C                                                               11/08/2022 08:53:30 PAGE 1   
+
+
+C51 COMPILER V9.60.0.0, COMPILATION OF MODULE I2C
+OBJECT MODULE PLACED IN .\Objects\I2C.obj
+COMPILER INVOKED BY: D:\APP\Keil\C51\BIN\C51.EXE I2C.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\I2C.
+                    -lst) TABS(2) OBJECT(.\Objects\I2C.obj)
+
+line level    source
+
+   1          #include "I2C.H"
+   2          
+   3          void i2c_start(void)
+   4          {
+   5   1        SDA=1;
+   6   1        SCL=1;
+   7   1        Delay10us();
+   8   1        SDA=0;
+   9   1        Delay10us();
+  10   1        SCL=0;
+  11   1      }
+  12          
+  13          void i2c_stop(void)
+  14          {
+  15   1        SDA=0;
+  16   1        SCL=1;
+  17   1        Delay10us();
+  18   1        SDA=1;
+  19   1        Delay10us();
+  20   1      }
+  21          
+  22          void i2c_ack(void)
+  23          {
+  24   1        SCL=0;
+  25   1        SDA=0;
+  26   1        Delay10us();
+  27   1        SCL=1;
+  28   1        Delay10us();
+  29   1        SCL=0;
+  30   1      }
+  31          
+  32          void i2c_nack(void)
+  33          {
+  34   1        SCL=0;
+  35   1        SDA=1;
+  36   1        Delay10us();
+  37   1        SCL=1;
+  38   1        Delay10us();
+  39   1        SCL=0;
+  40   1      }
+  41          
+  42          u8 i2c_wait_ack(void)
+  43          {
+  44   1        u8 time_temp=0;
+  45   1        SCL=1;
+  46   1        Delay10us();
+  47   1        
+  48   1        while(SDA)
+  49   1        {
+  50   2          time_temp++;
+  51   2          if(time_temp>100)
+  52   2          {
+  53   3            i2c_stop();
+  54   3            return 1;
+C51 COMPILER V9.60.0.0   I2C                                                               11/08/2022 08:53:30 PAGE 2   
+
+  55   3          }
+  56   2        }
+  57   1        SCL=0;
+  58   1        return 0;
+  59   1      }
+  60          
+  61          void i2c_send_byte(u8 dat)
+  62          {
+  63   1        u8 i=0;
+  64   1        
+  65   1        SCL=0;
+  66   1        for(i=0;i<8;i++)
+  67   1        {
+  68   2          if((dat&0x80)>0)
+  69   2            SDA=1;
+  70   2          else
+  71   2            SDA=0;
+  72   2          dat<<=1;
+  73   2          SCL=1;
+  74   2          Delay10us();
+  75   2          SCL=0;
+  76   2          Delay10us();
+  77   2        }
+  78   1      }
+  79          u8 i2c_read_byte(u8 ack)
+  80          {
+  81   1        u8 i=0;
+  82   1        u8 receive=0;
+  83   1        for(i=0;i<8;i++)
+  84   1        {
+  85   2          SCL=0;
+  86   2          Delay10us();
+  87   2          SCL=1;
+  88   2          Delay10us();
+  89   2          receive<<=1;
+  90   2          if(SDA)
+  91   2            receive++;
+  92   2        }
+  93   1        if(!ack)
+  94   1          i2c_nack();
+  95   1        else
+  96   1          i2c_ack();
+  97   1        return receive;
+  98   1      }
+  99          
+ 100          
+ 101          
+ 102          
+ 103          
+ 104          
+ 105          
+ 106          
+ 107          
+ 108          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    211    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       6
+C51 COMPILER V9.60.0.0   I2C                                                               11/08/2022 08:53:30 PAGE 3   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
